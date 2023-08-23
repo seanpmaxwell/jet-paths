@@ -30,4 +30,5 @@ const Paths = {
   },
 } as const;
 
-console.log(jetPaths(Paths, PREFIX));
+const pathsFull = jetPaths(Paths, PREFIX);
+console.log(pathsFull.Posts);

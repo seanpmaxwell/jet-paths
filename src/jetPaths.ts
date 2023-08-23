@@ -9,38 +9,32 @@
 const DEFAULT_BASE_KEY = 'Base';
 
 
-// **** Types **** //
-
-interface IPathObj {
-  [key: string]: string | IPathObj;
-}
-
 
 // **** Functions **** //
 
-function jetPaths(pathObj: IPathObj, baseKey?: string): IPathObj {
-  return jetPathsHelper(pathObj, baseKey ?? DEFAULT_BASE_KEY, '');
+function jetPaths<T extends Record<string, string | object>>(pathObj: T, baseKey?: string): T {
+  return jetPathsHelper(pathObj, baseKey ?? DEFAULT_BASE_KEY, '') as T;
 }
 
 /**
  * The recursive function.
  */
 function jetPathsHelper(
-  parentObj: IPathObj,
+  parentObj: Record<string, string | object>,
   baseKey: string,
   baseUrl: string,
-): IPathObj {
+): Record<string, string | object> {
   // Init vars
   const url = (baseUrl + parentObj[baseKey]),
     keys = Object.keys(parentObj),
-    retVal: IPathObj = { [baseKey]: url };
+    retVal: Record<string, string | object> = { [baseKey]: url };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
     if (key !== baseKey && typeof pval === 'string') {
       retVal[key] = (url + pval);
     } else if (typeof pval === 'object') {
-      retVal[key] = jetPathsHelper(pval, baseKey, url);
+      retVal[key] = jetPathsHelper(pval as {}, baseKey, url);
     }
   }
   // Return
