@@ -12,29 +12,29 @@ const DEFAULT_BASE_KEY = 'Base';
 
 // **** Functions **** //
 
-function jetPaths<T extends Record<string, string | object>>(pathObj: T, baseKey?: string): T {
-  return jetPathsHelper(pathObj, baseKey ?? DEFAULT_BASE_KEY, '') as T;
+function jetPaths<T>(pathObj: T, baseKey?: string): T {
+  return jetPathsHelper(pathObj, baseKey ?? DEFAULT_BASE_KEY, '');
 }
 
 /**
  * The recursive function.
  */
 function jetPathsHelper(
-  parentObj: Record<string, string | object>,
+  parentObj: any,
   baseKey: string,
   baseUrl: string,
-): Record<string, string | object> {
+): any {
   // Init vars
   const url = (baseUrl + parentObj[baseKey]),
     keys = Object.keys(parentObj),
-    retVal: Record<string, string | object> = { [baseKey]: url };
+    retVal = { [baseKey]: url };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
     if (key !== baseKey && typeof pval === 'string') {
       retVal[key] = (url + pval);
     } else if (typeof pval === 'object') {
-      retVal[key] = jetPathsHelper(pval as {}, baseKey, url);
+      retVal[key] = jetPathsHelper(pval, baseKey, url);
     }
   }
   // Return

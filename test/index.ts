@@ -5,6 +5,11 @@
 import jetPaths from '../src';
 
 
+export type Immutable<T> = {
+  readonly [K in keyof T]: Immutable<T[K]>;
+};
+
+
 const PREFIX = 'Root';
 
 const Paths = {
@@ -28,7 +33,7 @@ const Paths = {
       Delete: '/delete/:id',
     },
   },
-} as const;
+};
 
 const pathsFull = jetPaths(Paths, PREFIX);
-console.log(pathsFull.Posts);
+console.log(pathsFull);
