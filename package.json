@@ -1,6 +1,6 @@
 {
   "name": "jet-paths",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Preprend strings in an object with the value from a base-key.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
