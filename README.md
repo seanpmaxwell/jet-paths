@@ -1,5 +1,26 @@
 # About jet-paths
 
+Recursively formats an object containing strings, so that each string value is prepended with its containing objects prefix property.
+
+```typescript
+console.log(jetPaths({
+  Base: '/api',
+  Users: {
+    Base: '/users',
+    Get: '/all',
+  },
+}));
+
+// Outputs
+{
+  Base: '/api',
+  Users: {
+    Base: '/api/users',
+    Get: '/api/users/all',
+  },
+};
+```
+
 In my expressJS server, I would generally store my routes in an object like so 
 and pass them to express `Router()` objects:
 
@@ -9,7 +30,6 @@ const Paths = {
   Base: '/api',
   Users: {
     Base: '/users',
-    Get: '/all',
     Add: '/add',
     ...
 
@@ -35,13 +55,13 @@ over and over again. So I decided to write a recursive function that sets this u
 
 
 #### How it works
-The default import provides the function `jetPaths(obj, prefix (optional, default is 'BASE'))`. An object with the same keys is return with the prefix added for the parent object and all nested objects. 
+The default import provides the function `jetPaths(obj, prefix (optional, default is 'Base'))`. An object with the same keys is returned with the prefix added for the parent object and all nested objects. 
 
 
 #### Sample code:
 
 ```typescript
-import jetPaths from '../src';
+import jetPaths from 'jet-paths';
 
 const PREFIX = 'Root';
 
@@ -95,5 +115,7 @@ console.log(jetPaths(Paths, PREFIX));
   }
 }
 ```
+
+Oh yeah, whole thing is fully typesafe!
 
 Happy web-deving :)
