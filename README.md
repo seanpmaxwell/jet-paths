@@ -1,7 +1,7 @@
 # About jet-paths
 
 In my expressJS server, I would generally store my routes in an object like so 
-and pass them to the express `Router()` objects:
+and pass them to express `Router()` objects:
 
 ```typescript
 // My object
@@ -14,7 +14,7 @@ const Paths = {
     ...
 
 // And express router object
-userRouter.get(Paths.Uses.Add, (res, rej) => {
+userRouter.get(Paths.Users.Add, (res, rej) => {
   ...
 })
 ```
@@ -43,32 +43,32 @@ The default import provides the function `jetPaths(obj, prefix (optional, defaul
 ```typescript
 import jetPaths from '../src';
 
-const ROOT_KEY = 'Root';
+const PREFIX = 'Root';
 
 const Paths = {
-  [ROOT_KEY]: '/api',
+  [PREFIX]: '/api',
   Users: {
-    [ROOT_KEY]: '/users',
+    [PREFIX]: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    [ROOT_KEY]: '/posts',
+    [PREFIX]: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
     Private: {
-      [ROOT_KEY]: '/private',
+      [PREFIX]: '/private',
       Get: '/all',
       Delete: '/delete/:id',
     },
   },
 } as const;
 
-console.log(jetPaths(Paths, ROOT_KEY));
+console.log(jetPaths(Paths, PREFIX));
 
 // The above code will print out
 
@@ -94,11 +94,6 @@ console.log(jetPaths(Paths, ROOT_KEY));
     }
   }
 }
-
 ```
-
-
-
-
 
 Happy web-deving :)

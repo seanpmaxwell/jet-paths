@@ -5,29 +5,29 @@
 import jetPaths from '../src';
 
 
-const ROOT_KEY = 'Root';
+const PREFIX = 'Root';
 
 const Paths = {
-  [ROOT_KEY]: '/api',
+  [PREFIX]: '/api',
   Users: {
-    [ROOT_KEY]: '/users',
+    [PREFIX]: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    [ROOT_KEY]: '/posts',
+    [PREFIX]: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
     Private: {
-      [ROOT_KEY]: '/private',
+      [PREFIX]: '/private',
       Get: '/all',
       Delete: '/delete/:id',
     },
   },
 } as const;
 
-console.log(jetPaths(Paths, ROOT_KEY));
+console.log(jetPaths(Paths, PREFIX));
