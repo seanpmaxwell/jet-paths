@@ -15,7 +15,6 @@ const Paths = {
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
-    Bad: 17,
   },
   Posts: {
     [PREFIX]: '/posts',
@@ -32,4 +31,4 @@ const Paths = {
 } as const;
 
 const pathsFull = jetPaths(Paths, PREFIX);
-console.log(pathsFull.Users.Bad);
+console.log(pathsFull.Users.Delete);

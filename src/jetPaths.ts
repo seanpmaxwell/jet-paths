@@ -11,31 +11,38 @@ const DEFAULT_BASE_KEY = 'Base';
 
 // **** Types **** //
 
-// If path object being passed has 'as const' we need to change string property 
-// types to just 'string' instead of the specific value of the string.
-type Deep<T> = {
-  [P in keyof T]: T[P] extends string ? string : T[P] extends object ? Deep<T[P]> : T[P];
-}
+type TObject = { 
+  [key: string]: string | TObject 
+};
+
+// If an 'as const' is passed need to convert string 
+// specific vals back to just basic 'string' values.
+type Deep<T extends {}> = T extends string ? string : {
+  [K in keyof T]: Deep<T[K]>
+};
 
 
 // **** Functions **** //
 
-function jetPaths<T>(pathObj: T, baseKey?: string): Deep<T> {
-  return jetPathsHelper(pathObj, baseKey ?? DEFAULT_BASE_KEY, '');
+/**
+ * Format path object.
+ */
+function jetPaths<T extends TObject>(pathObj: T, baseKey?: string): Deep<T> {
+  return jetPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
 }
 
 /**
  * The recursive function.
  */
-function jetPathsHelper(
-  parentObj: any,
+function jetPathsHelper<T extends TObject>(
+  parentObj: TObject,
   baseKey: string,
   baseUrl: string,
-): any {
+): T {
   // Init vars
   const url = (baseUrl + parentObj[baseKey]),
     keys = Object.keys(parentObj),
-    retVal = { [baseKey]: url };
+    retVal: any = { [baseKey]: url };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
