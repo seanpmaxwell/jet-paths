@@ -9,7 +9,6 @@
   },
   "scripts": {
     "test": "npm run build && npx ts-node ./test/index.ts",
-    "test:js": "npm run build && node ./test/index.js",
     "build": "rimraf dist && rollup -c rollup.config.mjs"
   },
   "repository": {
