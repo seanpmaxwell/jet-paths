@@ -31,7 +31,7 @@ function jetPathsHelper(
   baseUrl: string,
 ): IPathObj {
   // Init vars
-  const url = (baseUrl + parentObj.Base),
+  const url = (baseUrl + parentObj[baseKey]),
     keys = Object.keys(parentObj),
     retVal: IPathObj = { [baseKey]: url };
   // Iterate keys

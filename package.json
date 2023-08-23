@@ -2,9 +2,15 @@
   "name": "jet-paths",
   "version": "1.0.0",
   "description": "Preprend strings in an object with the value from a base-key.",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "directories": {
+    "dist": "dist"
+  },
   "scripts": {
-    "test": "npm test"
+    "test": "npm run build && npx ts-node ./test/index.ts",
+    "test:js": "npm run build && node ./test/index.js",
+    "build": "rimraf dist && rollup -c rollup.config.mjs"
   },
   "repository": {
     "type": "git",
@@ -28,5 +34,13 @@
   "bugs": {
     "url": "https://github.com/seanpmaxwell/jet-paths/issues"
   },
-  "homepage": "https://github.com/seanpmaxwell/jet-paths#readme"
+  "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@rollup/plugin-terser": "^0.4.3",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.28.1",
+    "typescript": "^5.1.6",
+    "tslib": "^2.6.2"
+  }
 }
