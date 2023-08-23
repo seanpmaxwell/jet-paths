@@ -1,0 +1,32 @@
+{
+  "name": "jet-paths",
+  "version": "1.0.0",
+  "description": "Preprend strings in an object with the value from a base-key.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanpmaxwell/jet-paths.git"
+  },
+  "keywords": [
+    "express",
+    "path",
+    "paths",
+    "route",
+    "routes",
+    "supertest",
+    "jasmine",
+    "full",
+    "fullpath",
+    "fullpaths",
+    "object"
+  ],
+  "author": "sean maxwell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seanpmaxwell/jet-paths/issues"
+  },
+  "homepage": "https://github.com/seanpmaxwell/jet-paths#readme"
+}
