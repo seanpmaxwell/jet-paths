@@ -11,32 +11,33 @@ const DEFAULT_BASE_KEY = 'Base';
 
 // **** Types **** //
 
-type TObject = { 
-  [key: string]: string | TObject 
+type TObj = { 
+  [key: string]: string | TObj 
 };
 
 // If an 'as const' is passed need to convert string 
 // specific vals back to just basic 'string' values.
-type Deep<T> = 
-  T extends {} 
-    ? { [K in keyof T]: Deep<T[K]> }
-    : string 
-
+type Deep<T extends TObj | string> = 
+  T extends string
+    ? string 
+    : T extends TObj
+      ? { [K in keyof T]: Deep<T[K]> }
+      : unknown
 
 // **** Functions **** //
 
 /**
  * Format path object.
  */
-function setupPaths<T extends TObject>(pathObj: T, baseKey?: string): Deep<T> {
+function setupPaths<T extends TObj>(pathObj: T, baseKey?: string): Deep<T> {
   return setupPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
 }
 
 /**
  * The recursive function.
  */
-function setupPathsHelper<T extends TObject>(
-  parentObj: TObject,
+function setupPathsHelper<T extends TObj>(
+  parentObj: TObj,
   baseKey: string,
   baseUrl: string,
 ): T {
