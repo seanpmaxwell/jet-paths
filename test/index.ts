@@ -2,7 +2,7 @@
  * Test it works :)
  */
 
-import jetPaths from '../src';
+import jetPaths from '../dist/esm';
 
 
 const PREFIX = 'Root';
@@ -31,4 +31,4 @@ const Paths = {
 } as const;
 
 const pathsFull = jetPaths(Paths, PREFIX);
-console.log(pathsFull.Users.Delete);
+console.log(pathsFull);

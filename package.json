@@ -1,15 +1,19 @@
 {
   "name": "jet-paths",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Preprend strings in an object with the value from a base-key.",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "directories": {
-    "dist": "dist"
-  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
-    "test": "npm run build && npx ts-node ./test/index.ts",
-    "build": "rimraf dist && rollup -c rollup.config.mjs"
+    "build": "rimraf dist && rollup -c rollup.config.mjs",
+    "test": "node --experimental-specifier-resolution=node --loader ts-node/esm test/index.ts"
+  },
+  "exports": {
+    "require": "./dist/cjs/index.cjs",
+    "import": "./dist/esm/index.js",
+    "default": "./dist/cjs/index.cjs"
   },
   "repository": {
     "type": "git",
@@ -35,11 +39,14 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^11.1.2",
-    "@rollup/plugin-terser": "^0.4.3",
-    "rimraf": "^5.0.1",
-    "rollup": "^3.28.1",
-    "typescript": "^5.1.6",
-    "tslib": "^2.6.2"
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.19.1",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.4"
   }
 }

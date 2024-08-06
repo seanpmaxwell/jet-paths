@@ -17,9 +17,10 @@ type TObject = {
 
 // If an 'as const' is passed need to convert string 
 // specific vals back to just basic 'string' values.
-type Deep<T extends {}> = T extends string ? string : {
-  [K in keyof T]: Deep<T[K]>
-};
+type Deep<T> = 
+  T extends {} 
+    ? { [K in keyof T]: Deep<T[K]> }
+    : string 
 
 
 // **** Functions **** //
