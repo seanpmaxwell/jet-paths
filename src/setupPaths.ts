@@ -28,14 +28,14 @@ type Deep<T> =
 /**
  * Format path object.
  */
-function jetPaths<T extends TObject>(pathObj: T, baseKey?: string): Deep<T> {
-  return jetPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
+function setupPaths<T extends TObject>(pathObj: T, baseKey?: string): Deep<T> {
+  return setupPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
 }
 
 /**
  * The recursive function.
  */
-function jetPathsHelper<T extends TObject>(
+function setupPathsHelper<T extends TObject>(
   parentObj: TObject,
   baseKey: string,
   baseUrl: string,
@@ -50,7 +50,7 @@ function jetPathsHelper<T extends TObject>(
     if (key !== baseKey && typeof pval === 'string') {
       retVal[key] = (url + pval);
     } else if (typeof pval === 'object') {
-      retVal[key] = jetPathsHelper(pval, baseKey, url);
+      retVal[key] = setupPathsHelper(pval, baseKey, url);
     }
   }
   // Return
@@ -60,4 +60,4 @@ function jetPathsHelper<T extends TObject>(
 
 // **** Export default **** //
 
-export default jetPaths;
+export default setupPaths;

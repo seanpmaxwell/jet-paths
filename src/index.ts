@@ -1,1 +1,1 @@
-export { default } from './jetPaths';
+export { default } from './setupPaths';
