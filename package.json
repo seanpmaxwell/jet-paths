@@ -1,19 +1,13 @@
 {
   "name": "jet-paths",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Preprend strings in an object with the value from a base-key.",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && rollup -c rollup.config.mjs",
-    "test": "node --experimental-specifier-resolution=node --loader ts-node/esm test/index.ts"
-  },
-  "exports": {
-    "require": "./dist/cjs/index.cjs",
-    "import": "./dist/esm/index.js",
-    "default": "./dist/cjs/index.cjs"
+    "test": "ts-node test/index",
+    "build": "rm -rf ./dist && tsc -p tsconfig.build.json",
+    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i"
   },
   "repository": {
     "type": "git",
@@ -39,12 +33,6 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "rimraf": "^6.0.1",
-    "rollup": "^4.19.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4"

@@ -1,8 +1,4 @@
-/**
- * Test it works :)
- */
-
-import jetPaths from '../dist/esm';
+import jetPaths from '../src';
 
 
 const PREFIX = 'Root';
