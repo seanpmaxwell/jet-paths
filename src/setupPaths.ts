@@ -20,12 +20,12 @@ type Join<A extends string, B extends string> =
 /**
  * Recursively prefix all string paths in an object
  */
-type ExpandPaths<T extends Record<string, any>, Prefix extends string> = {
+type ExpandPaths<T extends Record<string, any>, BK extends keyof T, Prefix extends string> = {
   [K in keyof T]: 
     T[K] extends string
       ? Join<Prefix, T[K]>
       : T[K] extends Record<string, any>
-        ? ExpandPaths<T[K], Join<Prefix, T[K]["Root"]>>
+        ? ExpandPaths<T[K], BK, Join<Prefix, T[K][BK]>>
         : never;
 };
 
@@ -35,10 +35,10 @@ type ExpandPaths<T extends Record<string, any>, Prefix extends string> = {
 /**
  * Format path object.
  */
-function setupPaths<const T extends TObject, BK extends string = typeof DEFAULT_BASE_KEY>(
+function setupPaths<const T extends TObject, BK extends keyof T = typeof DEFAULT_BASE_KEY>(
   pathObj: T,
   baseKey?: BK,
-): ExpandPaths<T, T[BK] extends string ? T[BK] : never> {
+): ExpandPaths<T, BK, BK extends keyof T ? T[BK] extends string ? T[BK] : never : never> {
   return setupPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
 }
 
@@ -47,11 +47,11 @@ function setupPaths<const T extends TObject, BK extends string = typeof DEFAULT_
  */
 function setupPathsHelper<const T extends TObject>(
   parentObj: TObject,
-  baseKey: string,
+  baseKey: keyof T,
   baseUrl: string,
 ): T {
   // Init vars
-  const url = (baseUrl + parentObj[baseKey]),
+  const url = (baseUrl + (parentObj[baseKey] as string)),
     keys = Object.keys(parentObj),
     retVal: any = { [baseKey]: url };
   // Iterate keys
