@@ -1,7 +1,7 @@
-import jetPaths from '../src';
+import jetPaths from '../src/index.js';
 
 
-const PREFIX = 'Root';
+const PREFIX = 'Ass';
 
 const Paths = {
   [PREFIX]: '/api',
@@ -27,4 +27,5 @@ const Paths = {
 } as const;
 
 const pathsFull = jetPaths(Paths, PREFIX);
+pathsFull.Posts.Add 
 console.log(pathsFull);

@@ -1,43 +1,52 @@
+// **** Constants **** //
 
-/**
- * Convert paths to full paths.
- */
-
-
-// **** Variables **** //
-
-const DEFAULT_BASE_KEY = 'Base';
+const DEFAULT_BASE_KEY = 'Root';
 
 
 // **** Types **** //
 
-type TObj = { 
-  [key: string]: string | TObj 
+type TObject = { 
+  [key: string]: string | TObject 
 };
 
-// If an 'as const' is passed need to convert string 
-// specific vals back to just basic 'string' values.
-type Deep<T extends TObj | string> = 
-  T extends string
-    ? string 
-    : T extends TObj
-      ? { [K in keyof T]: Deep<T[K]> }
-      : unknown
+/**
+ * Joins two path segments, handling slashes cleanly.
+ */
+type Join<A extends string, B extends string> =
+  A extends "" ? B :
+  B extends "" ? A :
+  `${A}${B}`;
+
+/**
+ * Recursively prefix all string paths in an object
+ */
+type ExpandPaths<T extends Record<string, any>, Prefix extends string> = {
+  [K in keyof T]: 
+    T[K] extends string
+      ? Join<Prefix, T[K]>
+      : T[K] extends Record<string, any>
+        ? ExpandPaths<T[K], Join<Prefix, T[K]["Root"]>>
+        : never;
+};
+
 
 // **** Functions **** //
 
 /**
  * Format path object.
  */
-function setupPaths<T extends TObj>(pathObj: T, baseKey?: string): Deep<T> {
+function setupPaths<const T extends TObject, BK extends string = typeof DEFAULT_BASE_KEY>(
+  pathObj: T,
+  baseKey?: BK,
+): ExpandPaths<T, T[BK] extends string ? T[BK] : never> {
   return setupPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
 }
 
 /**
  * The recursive function.
  */
-function setupPathsHelper<T extends TObj>(
-  parentObj: TObj,
+function setupPathsHelper<const T extends TObject>(
+  parentObj: TObject,
   baseKey: string,
   baseUrl: string,
 ): T {
