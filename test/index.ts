@@ -18,6 +18,7 @@ const Paths = {
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
+    Misc: '/misc/:id/something/:foo',
     Private: {
       [PREFIX]: '/private',
       Get: '/all',
@@ -28,7 +29,8 @@ const Paths = {
 
 const pathsFull = jetPaths(Paths, 'Base');
 pathsFull.Posts.Add 
-pathsFull.Posts.Delete
+console.log(pathsFull.Posts.Delete({ id: 5, foo: 'bar' }));
+console.log(pathsFull.Posts.Misc({ id: 5, foo: 'bar' }))
 
 // Setup Vite Testing too
-console.log(pathsFull);
+// console.log(pathsFull);

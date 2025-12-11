@@ -74,7 +74,12 @@ function setupPathsHelper<T extends TObject>(
   for (const key of keys) {
     const pval = parentObj[key];
     if (key !== baseKey && typeof pval === 'string') {
-      retVal[key] = (url + pval);
+      const finalUrl = (url + pval);
+      if (pval.includes('/:')) {
+        retVal[key] = setupInsertUrlParamsFn(finalUrl);
+      } else {
+        retVal[key] = finalUrl; 
+      }
     } else if (typeof pval === 'object') {
       retVal[key] = setupPathsHelper(pval, baseKey, url);
     }
@@ -88,7 +93,6 @@ function setupPathsHelper<T extends TObject>(
  */
 function setupInsertUrlParamsFn(path: string) {
   const urlArr = path.split('/').filter(Boolean);
-
   // Get the indexes where a variable exists
   const paramIndexes: number[] = [];
   urlArr.forEach((param, i) => {
@@ -97,7 +101,6 @@ function setupInsertUrlParamsFn(path: string) {
       urlArr[i] = urlArr[i].slice(1);
     }
   });
-
   // Return the InsertUrlParams function
   return (paramsArg?: TUrlParamArg | TUrlParamValue) => {
     const urlArrClone = [ ...urlArr ];
@@ -114,7 +117,6 @@ function setupInsertUrlParamsFn(path: string) {
     return ((path.startsWith('/') ? '/' : '') + urlArrClone.join('/'));
   };
 }
-
 
 
 // **** Export default **** //
