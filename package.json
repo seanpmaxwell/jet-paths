@@ -1,6 +1,6 @@
 {
   "name": "jet-paths",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Preprend strings in an object with the value from a base-key.",
   "type": "module",              
   "main": "./cjs/index.js",      
