@@ -28,4 +28,7 @@ const Paths = {
 
 const pathsFull = jetPaths(Paths, 'Base');
 pathsFull.Posts.Add 
+pathsFull.Posts.Delete
+
+// Setup Vite Testing too
 console.log(pathsFull);

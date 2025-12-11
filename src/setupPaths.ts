@@ -5,6 +5,9 @@ const DEFAULT_BASE_KEY = 'Root';
 
 // **** Types **** //
 
+export type TUrlParamValue = string | number | boolean | null | undefined;
+export type TUrlParamArg = Record<string, TUrlParamValue>;
+
 type TObject = { 
   [key: string]: string | TObject 
 };
@@ -29,27 +32,40 @@ type ExpandPaths<T extends Record<string, any>, BK extends keyof T, Prefix exten
         : never;
 };
 
+type Iterate<T extends TObject> = { 
+  [K in keyof T]: T[K] extends string ? ResolveType<T[K]> : T[K] extends object ? Iterate<T[K]> : never
+};
+
+type ResolveType<S extends string> =
+  S extends `${string}/:${string}`
+    ? (urlParams?: TUrlParamArg) => S
+    : S;
+
 
 // **** Functions **** //
 
 /**
  * Format path object.
  */
-function setupPaths<const T extends TObject, BK extends keyof T = typeof DEFAULT_BASE_KEY>(
+function setupPaths<
+  const T extends TObject,
+  BK extends keyof T = typeof DEFAULT_BASE_KEY,
+  Prefix extends string = (BK extends keyof T ? T[BK] extends string ? T[BK] : never : never),
+>(
   pathObj: T,
   baseKey?: BK,
-): ExpandPaths<T, BK, BK extends keyof T ? T[BK] extends string ? T[BK] : never : never> {
-  return setupPathsHelper(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '');
+): Iterate<ExpandPaths<T, BK, Prefix>> {
+  return setupPathsHelper<T>(pathObj, (baseKey ?? DEFAULT_BASE_KEY), '') as Iterate<ExpandPaths<T, BK, Prefix>>;
 }
 
 /**
  * The recursive function.
  */
-function setupPathsHelper<const T extends TObject>(
+function setupPathsHelper<T extends TObject>(
   parentObj: TObject,
   baseKey: keyof T,
   baseUrl: string,
-): T {
+): Record<string, unknown> {
   // Init vars
   const url = (baseUrl + (parentObj[baseKey] as string)),
     keys = Object.keys(parentObj),
@@ -66,6 +82,39 @@ function setupPathsHelper<const T extends TObject>(
   // Return
   return retVal;
 }
+
+/**
+ * Initialize the function which setups up the url params
+ */
+function setupInsertUrlParamsFn(path: string) {
+  const urlArr = path.split('/').filter(Boolean);
+
+  // Get the indexes where a variable exists
+  const paramIndexes: number[] = [];
+  urlArr.forEach((param, i) => {
+    if (param.startsWith(':')) {
+      paramIndexes.push(i);
+      urlArr[i] = urlArr[i].slice(1);
+    }
+  });
+
+  // Return the InsertUrlParams function
+  return (paramsArg?: TUrlParamArg | TUrlParamValue) => {
+    const urlArrClone = [ ...urlArr ];
+    paramIndexes.forEach((index) => {
+      const key = urlArrClone[index];
+      if (!!paramsArg && typeof paramsArg === 'object') {
+        urlArrClone[index] = String(paramsArg[key]);
+      } else if (paramsArg !== undefined) {
+        urlArrClone[index] = String(paramsArg);
+      } else {
+        return path;
+      }
+    });
+    return ((path.startsWith('/') ? '/' : '') + urlArrClone.join('/'));
+  };
+}
+
 
 
 // **** Export default **** //
