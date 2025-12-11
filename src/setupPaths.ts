@@ -103,6 +103,9 @@ function setupInsertUrlParamsFn(path: string) {
   });
   // Return the InsertUrlParams function
   return (paramsArg?: TUrlParamArg | TUrlParamValue) => {
+    if (paramsArg === undefined) {
+      return path;
+    }
     const urlArrClone = [ ...urlArr ];
     paramIndexes.forEach((index) => {
       const key = urlArrClone[index];
@@ -110,8 +113,6 @@ function setupInsertUrlParamsFn(path: string) {
         urlArrClone[index] = String(paramsArg[key]);
       } else if (paramsArg !== undefined) {
         urlArrClone[index] = String(paramsArg);
-      } else {
-        return path;
       }
     });
     return ((path.startsWith('/') ? '/' : '') + urlArrClone.join('/'));
