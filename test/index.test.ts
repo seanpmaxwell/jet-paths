@@ -4,7 +4,7 @@ import jetPaths from '../src';
 
 const PREFIX = 'Base';
 
-const Paths = {
+const PATHS = {
   Base: '/api',
   Users: {
     [PREFIX]: '/users',
@@ -33,7 +33,7 @@ const Paths = {
  * Test jetPaths function
  */
 test('test jetPaths function', () => {
-  const pathsFull = jetPaths(Paths, 'Base');
+  const pathsFull = jetPaths(PATHS, 'Base');
   expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
   expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/posts/delete/5');
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual('/api/posts/misc/67/something/bar');
