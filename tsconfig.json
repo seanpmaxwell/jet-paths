@@ -1,21 +1,15 @@
 {
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "declarationMap": false,
-    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+
+    "noEmit": true,
+    "declaration": false
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "eslint.config.ts"
-  ],
-  "exclude": [
-    "./node_modules"
-  ]
+  "include": ["src", "test"]
 }

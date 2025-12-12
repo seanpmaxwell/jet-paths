@@ -2,30 +2,22 @@
   "name": "jet-paths",
   "version": "2.0.0",
   "description": "Preprend strings in an object with the value from a base-key.",
-  "type": "module",              
-  "main": "./cjs/index.js",      
-  "module": "./esm/index.js",
-  "types": "./esm/index.d.ts",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
-      "require": "./cjs/index.js",
-      "import": "./esm/index.js",
-      "types": "./esm/index.d.ts"
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts"
     }
   },
-  "files": [
-    "cjs",
-    "esm"
-  ],
-  "sideEffects": false,
+  "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:test": "npm run clean && tsc -p tsconfig.test.json",
-    "build": "npm run build:esm && npm run build:cjs",
-    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
+    "clean": "rm -rf dist && rm -rf cjs && rm -rf esm",
     "clean:install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
-    "test": "npm run build:test && node --test dist/test"
+    "test": "NODE_ENV=test vitest"
   },
   "repository": {
     "type": "git",
@@ -52,6 +44,7 @@
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
     "tslib": "^2.6.3",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.15"
   }
 }

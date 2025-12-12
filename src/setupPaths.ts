@@ -75,7 +75,7 @@ function setupPathsHelper<T extends TObject>(
     const pval = parentObj[key];
     if (key !== baseKey && typeof pval === 'string') {
       const finalUrl = (url + pval);
-      if (pval.includes('/:')) {
+      if (finalUrl.includes('/:')) {
         retVal[key] = setupInsertUrlParamsFn(finalUrl);
       } else {
         retVal[key] = finalUrl; 
