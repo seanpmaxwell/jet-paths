@@ -1,2 +1,3 @@
-import jetPaths from './setupPaths.js';
+import jetPaths, { setupInsertUrlParamsFn } from './setupPaths.js';
+export const insertUrlParams = setupInsertUrlParamsFn;
 export default jetPaths;

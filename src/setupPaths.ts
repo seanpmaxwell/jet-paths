@@ -1,9 +1,13 @@
-// **** Constants **** //
+/******************************************************************************
+                               Constants
+******************************************************************************/
 
 const DEFAULT_BASE_KEY = 'Root';
 
 
-// **** Types **** //
+/******************************************************************************
+                                 Types
+******************************************************************************/
 
 export type TUrlParamValue = string | number | boolean | null | undefined;
 export type TUrlParamArg = Record<string, TUrlParamValue>;
@@ -38,11 +42,13 @@ type Iterate<T extends TObject> = {
 
 type ResolveType<S extends string> =
   S extends `${string}/:${string}`
-    ? (urlParams?: TUrlParamArg) => S
+    ? (urlParams?: TUrlParamArg | TUrlParamValue) => S
     : S;
 
 
-// **** Functions **** //
+/******************************************************************************
+                               Functions
+******************************************************************************/
 
 /**
  * Format path object.
@@ -91,7 +97,7 @@ function setupPathsHelper<T extends TObject>(
 /**
  * Initialize the function which setups up the url params
  */
-function setupInsertUrlParamsFn(path: string) {
+export function setupInsertUrlParamsFn(path: string) {
   const urlArr = path.split('/').filter(Boolean);
   // Get the indexes where a variable exists
   const paramIndexes: number[] = [];
@@ -120,6 +126,8 @@ function setupInsertUrlParamsFn(path: string) {
 }
 
 
-// **** Export default **** //
+/******************************************************************************
+                            Export default
+******************************************************************************/
 
 export default setupPaths;
