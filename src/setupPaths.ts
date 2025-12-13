@@ -2,8 +2,10 @@
                                Constants
 ******************************************************************************/
 
-const BASE_KEY_KEY = 'Base key must exist on every object and the value ' + 
-  'must be a string';
+const BASE_KEY_KEY_ERROR = (key: string) => 'Base key must exist on every ' + 
+  'object and the value must be a string: ' + key;
+const BASE_KEY = '_';
+
 
 /******************************************************************************
                                  Types
@@ -11,25 +13,34 @@ const BASE_KEY_KEY = 'Base key must exist on every object and the value ' +
 
 export type TUrlParamValue = string | number | boolean | null | undefined;
 export type TUrlParamArg = Record<string, TUrlParamValue>;
+type TBaseKey = typeof BASE_KEY;
 
-type IObject = { 
+type TObject = { 
   '_': string;
-  [key: string]: string | IObject;
+  [key: string]: string | TObject;
 };
 
 interface IOptions {
-  prepend?: string;
+  prepend: string;
 }
 
 // **** Create the Recursive string type **** //
 
+type TSetupPrefix<T extends TObject, U extends (IOptions | undefined)> = 
+  undefined extends U 
+  ? T[TBaseKey] 
+  : U extends IOptions 
+    ? `${U['prepend']}${T[TBaseKey]}` 
+    : never;
+  
+
 // Recursively prefix all string paths in an object
-type ExpandPaths<T extends IObject, Prefix extends string> = {
+type ExpandPaths<T extends TObject, Prefix extends string> = {
   [K in keyof T]: 
     T[K] extends string
       ? Join<Prefix, T[K]>
-      : T[K] extends IObject
-        ? ExpandPaths<T[K], Join<Prefix, T[K]['_']>>
+      : T[K] extends TObject
+        ? ExpandPaths<T[K], Join<Prefix, T[K][TBaseKey]>>
         : never;
 };
 
@@ -65,35 +76,38 @@ type ResolveType<S extends string> =
  * Format path object.
  */
 function setupPaths<
-  const T extends IObject,
-  U extends (IOptions | undefined),
+  const T extends TObject,
+  const U extends (IOptions | undefined),
+  Prefix extends string = TSetupPrefix<T, U>,
+  RV = Iterate<ExpandPaths<T, Prefix>>,
 >(
   pathObj: T,
   options?: U,
-): Iterate<ExpandPaths<T, T['_']>> {
+): RV {
   const baseUrl = options?.prepend ?? '';
-  return setupPathsHelper(pathObj, baseUrl) as Iterate<ExpandPaths<T, T['_']>>;
+  return setupPathsHelper(pathObj, baseUrl, 'root') as RV;
 }
 
 /**
  * The recursive function.
  */
 function setupPathsHelper(
-  parentObj: Record<string, string | IObject>,
+  parentObj: Record<string, string | TObject>,
   baseUrl: string,
+  parentName: string,
 ): Record<string, unknown> {
   // Validate base key
-  if (typeof parentObj['_'] !== 'string') {
-    throw new Error(BASE_KEY_KEY);
+  if (typeof parentObj[BASE_KEY] !== 'string') {
+    throw new Error(BASE_KEY_KEY_ERROR(parentName));
   }
   // Init vars
-  const url = (baseUrl + (parentObj['_'])),
+  const url = (baseUrl + (parentObj[BASE_KEY])),
     keys = Object.keys(parentObj),
-    retVal: any = { root: url };
+    retVal: any = { [BASE_KEY]: url };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
-    if (key !== '_' && typeof pval === 'string') {
+    if (key !== BASE_KEY && typeof pval === 'string') {
       const finalUrl = (url + pval);
       if (finalUrl.includes('/:')) {
         retVal[key] = setupInsertUrlParamsFn(finalUrl);
@@ -101,7 +115,7 @@ function setupPathsHelper(
         retVal[key] = finalUrl; 
       }
     } else if (typeof pval === 'object') {
-      retVal[key] = setupPathsHelper(pval, url);
+      retVal[key] = setupPathsHelper(pval, url, key);
     }
   }
   // Return
