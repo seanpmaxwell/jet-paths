@@ -2,7 +2,7 @@
                                Constants
 ******************************************************************************/
 
-const BASE_KEY_KEY = 'Base key must exist on the parent object and the ' + 
+const BASE_KEY_KEY = 'Base key must exist on every object and the ' + 
   'value must be a string';
 
 const DEFAULT_OPTIONS = {
@@ -33,7 +33,10 @@ interface IOptions<BK> {
 // **** Create the Recursive string type **** //
 
 // Type-safe the base-key
-type TBaseKey<T, U extends (IOptions<keyof T> | undefined)> = (
+type TBaseKey<
+  T,
+  U extends (IOptions<GetStringKeys<T>> | undefined)
+> = (
   U extends undefined
   ? TDefaultBaseKey
   : 'baseKey' extends keyof U
@@ -42,6 +45,27 @@ type TBaseKey<T, U extends (IOptions<keyof T> | undefined)> = (
       : never
     : TDefaultBaseKey
 );
+
+// pick up here
+type TCheckBaseKey<T extends object, BK> = { 
+  [K in keyof T]: (
+    BK extends keyof T 
+      ? T[K] extends object 
+          ? TCheckBaseKey<T[K], BK> 
+          : T[K]
+      : never
+  )
+};
+
+type TCheckBaseKeyx<T extends object, BK extends keyof T> = { 
+  [K in keyof T]: (
+    T[K] extends object
+      ? BK extends keyof T[K]
+        ? TCheckBaseKey<T[K], BK>
+        : never
+      : T[K]
+  )
+};
 
 // Type-safe the prefix
 type TCheckStringValueOfObject<T, BK> = (
@@ -95,8 +119,7 @@ type ResolveType<S extends string> =
  */
 function setupPaths<
   T extends TObject,
-  StringKeys extends GetStringKeys<T>,
-  U extends (IOptions<StringKeys> | undefined),
+  U extends (IOptions<GetStringKeys<T>> | undefined),
   BK extends TBaseKey<T, U>,
   Prefix extends string = TCheckStringValueOfObject<T, BK>,
 >(

@@ -78,6 +78,6 @@ test('test insertUrlParams function', () => {
  * Test jetPaths function
  */
 test('test insertUrlParams function', () => {
-  const pathsFull = jetPaths(PATHS, { baseKey: 'Foo' });
-  expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
+  const pathsFull = jetPaths(PATHS, { baseKey: 'Foo', prepend: 'localhost:3000' });
+  expect(pathsFull.Users.Add).toStrictEqual('localhost:3000/api/users/add');
 });
