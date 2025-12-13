@@ -1,0 +1,20 @@
+# jet-paths 🧑✈️
+> Recursively formats an object of urls, so that full paths are setup automatically and you can quickly insert parameters.
+<br/>
+
+```typescript
+const Paths = jetPaths({
+  _: '/api',
+  Users: {
+    _: '/users',
+    Get: '/all',
+    One: '/:id'
+  },
+});
+
+Paths.Users.Get // value is "/api/users/all"
+Paths.Users.One(5) // returns "/api/users/5"
+Paths.Users._ // value is "/api/users"
+```
+
+Please refer to the official <a href="https://github.com/seanpmaxwell/jet-paths">github repo</a> for the most up-to-date documentation.

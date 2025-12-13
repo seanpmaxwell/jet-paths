@@ -31,7 +31,6 @@ const PATHS = {
   Foo: '/foo'
 } as const;
 
-
 /******************************************************************************
                                Functions
 ******************************************************************************/
@@ -62,7 +61,7 @@ test('test insertUrlParams function', () => {
 });
 
 /**
- * Test jetPaths function
+ * Test jetPaths prepending
  */
 test('test insertUrlParams function', () => {
   const paths = jetPaths({
@@ -70,12 +69,38 @@ test('test insertUrlParams function', () => {
     Users: {
       _: '/users',
       Get: '/all',
+      One: '/:id',
       Add: '/add',
       Update: '/update',
       Delete: '/delete/:id',
     },
   }, { prepend: 'localhost:3000' });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
+  expect(paths.Users.Delete({ id: 5, foo: 'bar' }))
+    .toStrictEqual('localhost:3000/api/users/delete/5');
+});
+
+
+/**
+ * Test more jetPaths prepending
+ */
+test('test more insertUrlParams function', () => {
+  const PREPEND: string = 'localhost:3000';
+  const paths = jetPaths({
+    _: '/api',
+    Users: {
+      _: '/users',
+      Get: '/all',
+      One: '/:id',
+      Add: '/add',
+      Update: '/update',
+      Delete: '/delete/:id',
+    },
+  }, { prepend: PREPEND });
+  expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
+    expect(paths.Users.One(null)).toStrictEqual('localhost:3000/api/users/null');
   expect(paths.Users.Delete({ id: 5, foo: 'bar' }))
     .toStrictEqual('localhost:3000/api/users/delete/5');
 });

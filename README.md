@@ -1,61 +1,69 @@
-# About jet-paths
-
-Recursively formats an object containing strings, so that each string value is prepended with its containing objects prefix property.
+# jet-paths 🧑✈️
+> Recursively formats an object of urls, so that full paths are setup automatically and you can quickly insert parameters.
+<br/>
 
 ```typescript
-console.log(jetPaths({
-  Base: '/api',
+const Paths = jetPaths({
+  _: '/api',
   Users: {
-    Base: '/users',
+    _: '/users',
     Get: '/all',
+    One: '/:id'
   },
-}));
+});
 
-// Outputs
+Paths.Users.Get // value is "/api/users/all"
+Paths.Users.One(5) // returns "/api/users/5"
+Paths.Users._ // value is "/api/users"
+```
+
+
+## Why jet-paths?
+
+### TypeScript first and fully typesafe!
+
+![vscode-1](./assets/vscode-1.png)
+![vscode-2](./assets/vscode-2.png)
+
+
+### Insert variables into urls using a primitive or object.
+- Mark url params as a variable using `/:`. Any URL which contains a variable will be formatted as a function both at runtime and compile time.
+
+```typescript
+const Paths = jetPaths({
+  _: '/api',
+  Users: {
+    _: '/users',
+    Get: '/all',
+    One: '/:id'
+    FooBar: '/foo/:name/bar/:id'
+  },
+});
+
+Paths.Users.FooBar({ id: 5, name: 'sean'}) // returns "/api/users/foo/sean/bar/5"
+```
+
+
+### Keep all your routes organized and avoid repetitive code
+
+- With <b>jet-paths</b> you can keep all the routes for your entire application neetly formattted into one giant object without having repetitive prefixes or needing wrapper functions for routes to insert URL parameters.
+
+> Traditionally, routes are often formatted like this in the snippet below. As you can see, for a large application this can be repetitve and is error prone.
+```typescript
+const BASE = '/api`;
+const BASE_USERS = `${BASE}/users`;
 {
-  Base: '/api',
   Users: {
-    Base: '/api/users',
-    Get: '/api/users/all',
+    Get: `${BASE_USERS}/all`,
+    One: (id: string | number) => `${BASE_USERS}/${id}`,
   },
-};
+  ...More routes below
+}
 ```
-
-In my expressJS server, I would generally store my routes in an object like so 
-and pass them to express `Router()` objects:
-
-```typescript
-// My object
-const Paths = {
-  Base: '/api',
-  Users: {
-    Base: '/users',
-    Add: '/add',
-    ...
-
-// And express router object
-userRouter.get(Paths.Users.Add, (res, rej) => {
-  ...
-})
-```
-
-This worked fine. But for my front-end and my `.spec` tests I needed the full path for each route. I didn't like having to do:
-
-```typescript
-const ADD_USERS_PATH = `${Paths.Base/Paths.User.Base/Paths.Users.Add}`,
-  GET_USERS_PATH = `${Paths.Base/Paths.User.Base/Paths.Users.Get}`,
-...
-```
-
-over and over again. So I decided to write a recursive function that sets this up for me.
 
 
 #### Installation
 - `npm i -s jet-paths`
-
-
-#### How it works
-The default import provides the function `jetPaths(obj, prefix (optional, default is 'Base'))`. An object with the same keys is returned with the prefix added for the parent object and all nested objects. 
 
 
 #### Sample code:
@@ -63,59 +71,82 @@ The default import provides the function `jetPaths(obj, prefix (optional, defaul
 ```typescript
 import jetPaths from 'jet-paths';
 
-const PREFIX = 'Root';
-
-const Paths = {
-  [PREFIX]: '/api',
+const Paths = jetPaths({
+  _: '/api',
   Users: {
-    [PREFIX]: '/users',
+    _: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    [PREFIX]: '/posts',
+    _: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
     Private: {
-      [PREFIX]: '/private',
+      _: '/private',
       Get: '/all',
-      Delete: '/delete/:id',
+      Delete: '/delete/:foo/bar/:id',
     },
   },
-} as const;
+}, { prepend: 'localhost:3000' });
 
-console.log(jetPaths(Paths, PREFIX));
-
-// The above code will print out
-
+// The above object will be formatted as:
 {
-  Root: '/api',
+  _: '/localhost:3000/api',
   Users: {
-    Root: '/api/users',
-    Get: '/api/users/all',
-    Add: '/api/users/add',
-    Update: '/api/users/update',
-    Delete: '/api/users/delete/:id'
+    _: '/localhost:3000/api/users',
+    Get: '/localhost:3000/api/users/all',
+    Add: '/localhost:3000/api/users/add',
+    Update: '/localhost:3000/api/users/update',
+    Delete: (args?: TUrlParam | TUrlParams) => '/localhost:3000/api/users/delete/:id'
   },
   Posts: {
-    Root: '/api/posts',
-    Get: '/api/posts/all',
-    Add: '/api/posts/add',
-    Update: '/api/posts/update',
-    Delete: '/api/posts/delete/:id',
+    _: '/localhost:3000/api/posts',
+    Get: '/localhost:3000/api/posts/all',
+    Add: '/localhost:3000/api/posts/add',
+    Update: '/localhost:3000/api/posts/update',
     Private: {
-      Root: '/api/posts/private',
-      Get: '/api/posts/private/all',
-      Delete: '/api/posts/private/delete/:id'
+      _: '/localhost:3000/api/posts/private',
+      Get: '/localhost:3000/api/posts/private/all',
+      Delete: (args?: TUrlParam | TUrlParams) => '/localhost:3000/api/posts/private/delete/:foo/bar/:id'
     }
   }
 }
+
+Paths.Users._ // "/localhost:3000/api/users"
+Paths.Users.Delete // "/localhost:3000/api/users"
+
 ```
 
-Oh yeah, whole thing is fully typesafe!
+#### The `prepend:` options
+
+- You can pass the optional `prepend:` option which will prepend a string to the start every route. This could also be done by adding a string to the root level `"_"` property; however, if you pass a non constant values to this property it will loose typesafety and just be formatted as `${string}`.
+
+#### Passing different arguments to a function URL
+
+- You can pass an object, a primitive, or no arguments to a URL function to replace variables with values. Here are some edge cases to keep in mind:
+  - If you pass a primitive and there are multiple variables, the primitive will replace every variable.
+  - If you pass an object, the object keys must equal a variable in the URL string or they won't replace anything.
+  - If you need to access the URL without inserting anything, just called the function with no arguments and an unformatted URL will remain.
+  - `null` can be inserted, but you must convert `undefined` to a string first if you want to insert it.
+
+#### The `.insertUrlParams` function
+
+- If you want to insert url parameters outside of your paths object for whatever reason you can import the `insertUrlParams` independently. For efficiency, this function wraps the url and returns another function which insert the variables.
+
+```typescript
+import { insertUrlParams } from 'jet-paths';
+
+// Runtime
+const formatPath = insertUrlParams('/foo/:name/bar/:id');
+
+// Whenever your API is called
+formatPath({ id: 5, name: 'sean'}) // returns "/foo/sean/bar/5"
+```
+
 
 Happy web-deving :)

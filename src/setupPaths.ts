@@ -11,8 +11,9 @@ const BASE_KEY = '_';
                                  Types
 ******************************************************************************/
 
-export type TUrlParamValue = string | number | boolean | null | undefined;
-export type TUrlParamArg = Record<string, TUrlParamValue>;
+type TUrlParam = string | number | boolean | null | undefined;
+type TUrlParamObject = Record<string, TUrlParam>;
+export type TUrlParams = TUrlParam | TUrlParamObject;
 type TBaseKey = typeof BASE_KEY;
 
 type TObject = { 
@@ -67,7 +68,7 @@ type Iterate<T extends object> = {
 
 type ResolveType<S extends string> =
   S extends `${string}/:${string}`
-    ? (urlParams?: TUrlParamArg | TUrlParamValue) => S
+    ? (urlParams?: TUrlParams) => S
     : S;
 
 /******************************************************************************
@@ -138,7 +139,7 @@ export function setupInsertUrlParamsFn(path: string) {
     }
   });
   // Return the InsertUrlParams function
-  return (paramsArg?: TUrlParamArg | TUrlParamValue) => {
+  return (paramsArg?: TUrlParams) => {
     if (paramsArg === undefined) {
       return path;
     }
