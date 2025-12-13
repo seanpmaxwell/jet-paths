@@ -5,19 +5,17 @@ import jetPaths, { insertUrlParams } from '../src';
                                Constants
 ******************************************************************************/
 
-const PREFIX = 'Base';
-
 const PATHS = {
-  [PREFIX]: '/api',
+  base: '/api',
   Users: {
-    [PREFIX]: '/users',
+    base: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    [PREFIX]: '/posts',
+    base: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
@@ -25,7 +23,7 @@ const PATHS = {
     Misc: '/misc/:id/something/:foo',
     Else: '/else/:id/something/foo',
     Private: {
-      [PREFIX]: '/private',
+      base: '/private',
       Get: '/all',
       Delete: '/delete/:id',
     },
@@ -33,16 +31,6 @@ const PATHS = {
   Foo: '/foo'
 } as const;
 
-const PATHS_2 = {
-  Root: '/api',
-  Users: {
-    Root: '/users',
-    Get: '/all',
-    Add: '/add',
-    Update: '/update',
-    Delete: '/delete/:id',
-  },
-} as const;
 
 /******************************************************************************
                                Functions
@@ -52,13 +40,22 @@ const PATHS_2 = {
  * Test jetPaths function
  */
 test('test jetPaths function and baseKey option', () => {
-  const pathsFull = jetPaths(PATHS, { baseKey: PREFIX });
+  const pathsFull = jetPaths(PATHS);
   expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
   expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/posts/delete/5');
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual('/api/posts/misc/67/something/bar');
   expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual('/api/posts/else/34/something/foo');
   expect(pathsFull.Posts.Misc()).toStrictEqual('/api/posts/misc/:id/something/:foo');
-  const pathsFull2 = jetPaths(PATHS_2);
+  const pathsFull2 = jetPaths({
+    base: '/api',
+    Users: {
+      base: '/users',
+      Get: '/all',
+      Add: '/add',
+      Update: '/update',
+      Delete: '/delete/:id',
+    },
+  });
   expect(pathsFull2.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/users/delete/5');
 });
 
@@ -78,6 +75,6 @@ test('test insertUrlParams function', () => {
  * Test jetPaths function
  */
 test('test insertUrlParams function', () => {
-  const pathsFull = jetPaths(PATHS, { baseKey: 'Foo', prepend: 'localhost:3000' });
+  const pathsFull = jetPaths(PATHS, { prepend: 'localhost:3000' });
   expect(pathsFull.Users.Add).toStrictEqual('localhost:3000/api/users/add');
 });
