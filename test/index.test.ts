@@ -6,16 +6,16 @@ import jetPaths, { insertUrlParams } from '../src';
 ******************************************************************************/
 
 const PATHS = {
-  base: '/api',
+  _: '/api',
   Users: {
-    base: '/users',
+    _: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    base: '/posts',
+    _: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
@@ -23,7 +23,7 @@ const PATHS = {
     Misc: '/misc/:id/something/:foo',
     Else: '/else/:id/something/foo',
     Private: {
-      base: '/private',
+      _: '/private',
       Get: '/all',
       Delete: '/delete/:id',
     },
@@ -46,17 +46,6 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual('/api/posts/misc/67/something/bar');
   expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual('/api/posts/else/34/something/foo');
   expect(pathsFull.Posts.Misc()).toStrictEqual('/api/posts/misc/:id/something/:foo');
-  const pathsFull2 = jetPaths({
-    base: '/api',
-    Users: {
-      base: '/users',
-      Get: '/all',
-      Add: '/add',
-      Update: '/update',
-      Delete: '/delete/:id',
-    },
-  });
-  expect(pathsFull2.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/users/delete/5');
 });
 
 /**
@@ -75,6 +64,18 @@ test('test insertUrlParams function', () => {
  * Test jetPaths function
  */
 test('test insertUrlParams function', () => {
-  const pathsFull = jetPaths(PATHS, { prepend: 'localhost:3000' });
-  expect(pathsFull.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  const paths = jetPaths({
+    _: '/api',
+    Users: {
+      _: '/users',
+      Get: '/all',
+      Add: '/add',
+      Update: '/update',
+      Delete: '/delete/:id',
+    },
+  }, { prepend: 'localhost:3000' });
+  expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/users/delete/5');
+
+  // pick 
 });

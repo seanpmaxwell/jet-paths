@@ -13,7 +13,7 @@ export type TUrlParamValue = string | number | boolean | null | undefined;
 export type TUrlParamArg = Record<string, TUrlParamValue>;
 
 type IObject = { 
-  base: string;
+  '_': string;
   [key: string]: string | IObject;
 };
 
@@ -27,9 +27,9 @@ interface IOptions {
 type ExpandPaths<T extends IObject, Prefix extends string> = {
   [K in keyof T]: 
     T[K] extends string
-      ? Join<T['base'], T[K]>
+      ? Join<Prefix, T[K]>
       : T[K] extends IObject
-        ? ExpandPaths<T[K], Join<Prefix, T[K]['base']>>
+        ? ExpandPaths<T[K], Join<Prefix, T[K]['_']>>
         : never;
 };
 
@@ -65,14 +65,14 @@ type ResolveType<S extends string> =
  * Format path object.
  */
 function setupPaths<
-  U extends (IOptions | undefined),
   const T extends IObject,
+  U extends (IOptions | undefined),
 >(
   pathObj: T,
   options?: U,
-): Iterate<ExpandPaths<T, T['base']>> {
+): Iterate<ExpandPaths<T, T['_']>> {
   const baseUrl = options?.prepend ?? '';
-  return setupPathsHelper(pathObj, baseUrl) as Iterate<ExpandPaths<T, T['base']>>;
+  return setupPathsHelper(pathObj, baseUrl) as Iterate<ExpandPaths<T, T['_']>>;
 }
 
 /**
@@ -83,17 +83,17 @@ function setupPathsHelper(
   baseUrl: string,
 ): Record<string, unknown> {
   // Validate base key
-  if (typeof parentObj['base'] !== 'string') {
+  if (typeof parentObj['_'] !== 'string') {
     throw new Error(BASE_KEY_KEY);
   }
   // Init vars
-  const url = (baseUrl + (parentObj['base'])),
+  const url = (baseUrl + (parentObj['_'])),
     keys = Object.keys(parentObj),
     retVal: any = { root: url };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
-    if (key !== 'base' && typeof pval === 'string') {
+    if (key !== '_' && typeof pval === 'string') {
       const finalUrl = (url + pval);
       if (finalUrl.includes('/:')) {
         retVal[key] = setupInsertUrlParamsFn(finalUrl);
