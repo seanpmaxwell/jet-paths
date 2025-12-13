@@ -17,9 +17,13 @@ export type TUrlParamValue = string | number | boolean | null | undefined;
 export type TUrlParamArg = Record<string, TUrlParamValue>;
 type TDefaultBaseKey = typeof DEFAULT_OPTIONS['baseKey'];
 
-interface TObject { 
-  [key: string]: string | TObject,
+type TObject = { 
+  [key: string]: string | TObject;
 };
+
+type StringKeys<T> = {
+  [K in keyof T]: T[K] extends string ? K : never
+}[keyof T];
 
 interface IOptions<BK> {
   baseKey?: BK;
@@ -40,7 +44,13 @@ type TBaseKey<T, U extends (IOptions<keyof T> | undefined)> = (
 );
 
 // Type-safe the prefix
-type TPrefix<T, BK> = (BK extends keyof T ? T[BK] extends string ? T[BK] : never : never);
+type TCheckStringValueOfObject<T, BK> = (
+  BK extends keyof T 
+  ? T[BK] extends string 
+    ? T[BK] 
+    : never 
+  : never
+);
 
 // Recursively prefix all string paths in an object
 type ExpandPaths<T extends Record<string, any>, BK extends keyof T, Prefix extends string> = {
@@ -62,7 +72,13 @@ type Join<A extends string, B extends string> =
 // **** Set string or function type **** //
 
 type Iterate<T extends TObject> = { 
-  [K in keyof T]: T[K] extends string ? ResolveType<T[K]> : T[K] extends object ? Iterate<T[K]> : never
+  [K in keyof T]: (
+    T[K] extends string 
+      ? ResolveType<T[K]> 
+      : T[K] extends object 
+        ? Iterate<T[K]> 
+        : never
+  )
 };
 
 type ResolveType<S extends string> =
@@ -78,10 +94,11 @@ type ResolveType<S extends string> =
  * Format path object.
  */
 function setupPaths<
-  const T extends TObject,
-  U extends (IOptions<keyof T> | undefined),
+  T extends TObject,
+  Keys extends StringKeys<T>,
+  U extends (IOptions<Keys> | undefined),
   BK extends TBaseKey<T, U>,
-  Prefix extends string = TPrefix<T, BK>,
+  Prefix extends string = TCheckStringValueOfObject<T, BK>,
 >(
   pathObj: T,
   options?: U,
@@ -101,8 +118,8 @@ function setupPaths<
  * The recursive function.
  */
 function setupPathsHelper(
-  parentObj: Record<string | number, string | TObject>,
-  baseKey: string | number,
+  parentObj: Record<string, string | TObject>,
+  baseKey: string,
   baseUrl: string,
 ): Record<string, unknown> {
   // Validate base key

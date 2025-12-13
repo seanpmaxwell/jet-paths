@@ -30,6 +30,7 @@ const PATHS = {
       Delete: '/delete/:id',
     },
   },
+  Foo: '/foo'
 } as const;
 
 const PATHS_2 = {
@@ -62,7 +63,7 @@ test('test jetPaths function and baseKey option', () => {
 });
 
 /**
- * Test jetPaths function
+ * Test insertUrlParams functions
  */
 test('test insertUrlParams function', () => {
   const result1 = insertUrlParams('/api/users/:id')(7),
@@ -71,4 +72,12 @@ test('test insertUrlParams function', () => {
   expect(result1).toStrictEqual('/api/users/7');
   expect(result2).toStrictEqual('api/post/steve/1');
   expect(result3).toStrictEqual('/api/post/foo/foo');
+});
+
+/**
+ * Test jetPaths function
+ */
+test('test insertUrlParams function', () => {
+  const pathsFull = jetPaths(PATHS, { baseKey: 'Foo' });
+  expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
 });
