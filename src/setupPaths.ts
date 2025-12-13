@@ -38,7 +38,9 @@ type TSetupPrefix<T extends TObject, U extends (IOptions | undefined)> =
 type ExpandPaths<T extends TObject, Prefix extends string> = {
   [K in keyof T]: 
     T[K] extends string
-      ? Join<Prefix, T[K]>
+      ? K extends '_'
+        ? Prefix
+        : Join<Prefix, T[K]>
       : T[K] extends TObject
         ? ExpandPaths<T[K], Join<Prefix, T[K][TBaseKey]>>
         : never;
@@ -79,13 +81,13 @@ function setupPaths<
   const T extends TObject,
   const U extends (IOptions | undefined),
   Prefix extends string = TSetupPrefix<T, U>,
-  RV = Iterate<ExpandPaths<T, Prefix>>,
+  RetVal = Iterate<ExpandPaths<T, Prefix>>,
 >(
   pathObj: T,
   options?: U,
-): RV {
+): RetVal {
   const baseUrl = options?.prepend ?? '';
-  return setupPathsHelper(pathObj, baseUrl, 'root') as RV;
+  return setupPathsHelper(pathObj, baseUrl, 'root') as RetVal;
 }
 
 /**
