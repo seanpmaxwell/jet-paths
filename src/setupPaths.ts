@@ -21,7 +21,7 @@ type TObject = {
   [key: string]: string | TObject;
 };
 
-type StringKeys<T> = {
+type GetStringKeys<T> = {
   [K in keyof T]: T[K] extends string ? K : never
 }[keyof T];
 
@@ -95,8 +95,8 @@ type ResolveType<S extends string> =
  */
 function setupPaths<
   T extends TObject,
-  Keys extends StringKeys<T>,
-  U extends (IOptions<Keys> | undefined),
+  StringKeys extends GetStringKeys<T>,
+  U extends (IOptions<StringKeys> | undefined),
   BK extends TBaseKey<T, U>,
   Prefix extends string = TCheckStringValueOfObject<T, BK>,
 >(
