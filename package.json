@@ -1,7 +1,7 @@
 {
   "name": "jet-paths",
   "version": "2.0.0",
-  "description": "Preprend strings in an object with the value from a base-key.",
+  "description": "A TypeScript-first utility for composing, validating, and formatting URL paths using nested objects.",
   "type": "module",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
