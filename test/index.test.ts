@@ -120,8 +120,10 @@ test.only('test jetPaths function and baseKey option', () => {
   const pathsFull = jetPaths(PATHS, { regex: true });
   expect(() => pathsFull.Posts.Other({ id: 5, name: 'john' })).not.toThrowError();
   expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
-  expect(() => pathsFull.Posts.Other({ id: 5, foo: 'bar 62 23*(&^' })).toThrowError();
+  expect(() => pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' })).toThrowError();
   expect(() => pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 })).toThrowError();
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
+  const pathsCustomRegex = jetPaths(PATHS, { regex: /^.*$/s });
+  expect(() => pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' })).not.toThrowError();
 });
 
