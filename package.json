@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
-  "browser": "./dist/esm/index.js", 
+  "browser": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
@@ -14,7 +14,9 @@
       "types": "./dist/types/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean": "rm -rf dist && rm -rf cjs && rm -rf esm",
@@ -28,17 +30,23 @@
     "url": "git+https://github.com/seanpmaxwell/jet-paths.git"
   },
   "keywords": [
-    "express",
+    "typescript",
+    "url",
+    "urls",
+    "routing",
+    "routes",
     "path",
     "paths",
-    "route",
-    "routes",
-    "supertest",
-    "jasmine",
-    "full",
-    "fullpath",
-    "fullpaths",
-    "object"
+    "api",
+    "rest",
+    "http",
+    "type-safe",
+    "typesafe",
+    "regex",
+    "validation",
+    "parameters",
+    "string-formatting",
+    "developer-tools"
   ],
   "author": "sean maxwell",
   "license": "MIT",

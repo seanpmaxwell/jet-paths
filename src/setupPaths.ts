@@ -6,7 +6,7 @@
 const BASE_KEY_KEY_ERROR = (key: string) => 'Base key must exist on every ' + 
   'object and the value must be a string: ' + key;
 const STRICT_KEY_NAME_LENGTH_ERROR = 'Option :strictKeyNames is set to true but ' +
-  'but the number of object keys did not match the number of url parameters.';
+  'but the number of object keys did not match the number of URL parameters.';
 const STRICT_KEY_NAME_KEY_ERROR = (key: string) => 'Option :strictKeysNames'  +
   `is set to return true but the "${key}" was not present on the object.`;
 const REGEX_FAILED_ERROR = 'URL failed regular expression check';
@@ -19,9 +19,9 @@ const DEFAULT_REGEX = /^[A-Za-z0-9_\/-]+$/;
                                  Types
 ******************************************************************************/
 
-type TUrlParam = string | number | boolean | null | undefined;
-type TUrlParamObject = Record<string, TUrlParam>;
-export type TUrlParams = TUrlParam | TUrlParamObject;
+type URLParam = string | number | boolean | null | undefined;
+type URLParamObject = Record<string, URLParam>;
+export type URLParams = URLParam | URLParamObject;
 type TBaseKey = typeof BASE_KEY;
 
 type TObject = { 
@@ -43,7 +43,7 @@ type TSetupPrefix<T extends TObject, U extends (IOptions | undefined)> =
   : U extends IOptions 
     ? U['prepend'] extends string 
       ? `${U['prepend']}${T[TBaseKey]}`
-      : never
+      : T[TBaseKey]
     : never;
   
 
@@ -80,7 +80,7 @@ type Iterate<T extends object> = {
 
 type ResolveType<S extends string> =
   S extends `${string}/:${string}`
-    ? (urlParams?: TUrlParams) => S
+    ? (urlParams?: URLParams) => S
     : S;
 
 /******************************************************************************
@@ -165,14 +165,14 @@ function setupInsertUrlParamsFn(
     }
   });
   // Return the InsertUrlParams function
-  return (paramsArg?: TUrlParams) => {
+  return (paramsArg?: URLParams) => {
     if (paramsArg === undefined) {
       return path;
     }
     const isParamObject = (!!paramsArg && typeof paramsArg === 'object');
     // Check the number of keys
     if (strictKeyNames && isParamObject) {
-      if (Object.keys(paramsArg).length !== urlArr.length) {
+      if (Object.keys(paramsArg).length !== paramIndexes.length) {
         throw new Error(STRICT_KEY_NAME_LENGTH_ERROR);
       }
     }
@@ -191,7 +191,7 @@ function setupInsertUrlParamsFn(
     });
     // Check the regex if truthy
     const finalUrl = (path.startsWith('/') ? '/' : '') + urlArrClone.join('/');
-    if (stripQueryAndHash(finalUrl, regex)) {
+    if (!stripQueryAndHash(finalUrl, regex)) {
       throw new Error(REGEX_FAILED_ERROR);
     }
     return finalUrl;

@@ -1,76 +1,102 @@
-# jet-paths 🧑✈️
-> Recursively formats an object of urls, so that full paths are setup automatically and you can quickly insert parameters.
-<br/>
+# jet-paths ✈️
 
-```typescript
+[![npm version](https://img.shields.io/npm/v/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
+[![npm downloads](https://img.shields.io/npm/dm/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
+[![TypeScript](https://img.shields.io/badge/TypeScript-✔-blue)](https://www.typescriptlang.org/)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/jet-paths?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-paths)
+[![License](https://img.shields.io/npm/l/jet-paths.svg)](LICENSE)
+
+
+> A type-safe utility for defining, composing, and formatting URL paths using nested objects.
+
+Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert parameters easily and consistently.
+
+---
+
+```ts
 const Paths = jetPaths({
   _: '/api',
   Users: {
     _: '/users',
     Get: '/all',
-    One: '/:id'
-  },
+    One: '/:id',
+  },**/**/tsconfig.*
 });
 
-Paths.Users.Get // value is "/api/users/all"
-Paths.Users.One(5) // returns "/api/users/5"
-Paths.Users._ // value is "/api/users"
+Paths.Users.Get        // "/api/users/all"
+Paths.Users.One(5)     // "/api/users/5"
+Paths.Users._          // "/api/users"
 ```
 
+---
 
 ## Why jet-paths?
-- Automatically setup full urls using nested objects to avoid repeat code.
-- URLs with parameters are automatically formatted as functions so you can easily insert values.
-- Optionally provide regular expression checking for the URL format.
-- TypeScript first and fully typesafe!
+
+* Automatically sets up full URLs using nested objects, avoiding repeated prefixes and boilerplate.
+* URLs with parameters are automatically converted into functions for easy value insertion.
+* Optional regular expression validation ensures URLs conform to a specific format.
+* **TypeScript-first** and fully type-safe.
 
 ![vscode-1](./assets/vscode-1.png)
 ![vscode-2](./assets/vscode-2.png)
 
+---
 
-### Keep all your routes organized and avoid repetitive code
+## Keep your routes organized
 
-- With <b>jet-paths</b> you can keep all the routes for your entire application neetly formattted into one giant object without having repetitive prefixes or needing wrapper functions for routes to insert URL parameters.
+With **jet-paths**, you can keep all routes for your entire application neatly formatted into a single object—without repetitive prefixes or custom wrapper functions to insert URL parameters.
 
-> Traditionally, routes are often formatted like this in the snippet below. As you can see, for a large application this can be repetitve and is error prone.
-```typescript
-const BASE = '/api`;
+Traditionally, routes are often defined like the snippet below. As applications grow, this approach becomes repetitive and error-prone:
+
+```ts
+const BASE = '/api';
 const BASE_USERS = `${BASE}/users`;
+
 {
   Users: {
     Get: `${BASE_USERS}/all`,
     One: (id: string | number) => `${BASE_USERS}/${id}`,
   },
-  ...More routes below
+  // ...more routes
 }
 ```
 
-### Insert variables into urls using a primitive or object.
-- Mark url params as a variable using `/:`. Any URL which contains a variable will be formatted as a function both at runtime and compile time.
+---
 
-```typescript
+## Insert variables into URLs
+
+Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
+
+```ts
 const Paths = jetPaths({
   _: '/api',
   Users: {
     _: '/users',
     Get: '/all',
-    One: '/:id'
-    FooBar: '/foo/:name/bar/:id'
+    One: '/:id',
+    FooBar: '/foo/:name/bar/:id',
   },
 });
 
-Paths.Users.FooBar({ id: 5, name: 'sean'}) // returns "/api/users/foo/sean/bar/5"
+Paths.Users.FooBar({ id: 5, name: 'sean' });
+// "/api/users/foo/sean/bar/5"
 ```
 
-## Quickstart
+---
+
+## Quick Start
 
 ### Installation
-- `npm i -s jet-paths`
 
+```bash
+npm install jet-paths
+```
 
-### Sample code:
+---
 
-```typescript
+### Example
+
+```ts
 import jetPaths from 'jet-paths';
 
 const Paths = jetPaths({
@@ -94,97 +120,91 @@ const Paths = jetPaths({
       Delete: '/delete/:foo/bar/:id',
     },
   },
-}, { prepend: 'localhost:3000' }); // <- Options go here 
-
-// The above object will be formatted as:
-{
-  _: '/localhost:3000/api',
-  Users: {
-    _: '/localhost:3000/api/users',
-    Get: '/localhost:3000/api/users/all',
-    Add: '/localhost:3000/api/users/add',
-    Update: '/localhost:3000/api/users/update',
-    Delete: (args?: TUrlParam | TUrlParams) => '/localhost:3000/api/users/delete/:id'
-  },
-  Posts: {
-    _: '/localhost:3000/api/posts',
-    Get: '/localhost:3000/api/posts/all',
-    Add: '/localhost:3000/api/posts/add',
-    Update: '/localhost:3000/api/posts/update',
-    Private: {
-      _: '/localhost:3000/api/posts/private',
-      Get: '/localhost:3000/api/posts/private/all',
-      Delete: (args?: TUrlParam | TUrlParams) => '/localhost:3000/api/posts/private/delete/:foo/bar/:id'
-    }
-  }
-}
-
-Paths.Users._ // "/localhost:3000/api/users"
-Paths.Users.Delete // "/localhost:3000/api/users"
-
+}, { prepend: 'localhost:3000' });
 ```
 
-### Passing different arguments to a function URL
+The object above is formatted into fully qualified, type-safe routes:
 
-- You can pass an object, a primitive, or no arguments to a URL function to replace variables with values. Here are some edge cases to keep in mind:
-  - If you pass a primitive and there are multiple variables, the primitive will replace every variable.
-  - If you pass an object, the object keys must equal a variable in the URL string or they won't replace anything. If `strictKeyNames` is `true`
-  - If you need to access the URL without inserting anything, just called the function with no arguments and an unformatted URL will remain.
-  - `null` can be inserted, but you must convert `undefined` to a string first if you want to insert it.
+```ts
+Paths.Users._;               // "/localhost:3000/api/users"
+Paths.Users.Delete({ id: 1 });
+```
+
+---
+
+## Passing arguments to URL functions
+
+You may pass an object, a primitive, or no arguments at all when calling a URL function.
+
+Key behaviors to note:
+
+* If a primitive is passed and multiple parameters exist, the value replaces **all** parameters.
+* If an object is passed, its keys must match the parameter names in the URL.
+* When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
+* Calling the function with no arguments returns the unformatted URL.
+* `null` may be inserted, but `undefined` must be converted to a string explicitly.
+
+---
 
 ## Options
 
-### `prepend:` (`string` - default: `undefined`)
+### `prepend` (`string` | `undefined`, default: `undefined`)
 
-- You can pass the optional `prepend:` option which will prepend a string to the beginning of every route. This could also be done by adding a string to the root level `"_"` key/value pair; however, if you pass a non constant value to this property it will loose typesafety and just be formatted as `${string}`.
+Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
 
-### `strictKeyNames:` (`boolean` - default: `true`)
+---
 
-- When `true`, the keys in an object argument to a URL function must align with the names of the URL path params. There cannot more or fewer keys either. Anything else will throw an error.
+### `strictKeyNames` (`boolean`, default: `true`)
 
-```typescript
-const Paths = jetPaths({
-  _: '/api',
-  Users: {
-    _: '/users',
-    FooBar: '/foo/:name/bar/:id'
-  },
-});
+When enabled, object keys passed to a URL function must exactly match the URL parameter names—no more, no fewer. Any mismatch will throw an error.
 
-Paths.Users.FooBar({ id: 5, name: 'sean', age: 4 }) // ERROR: Too many keys
-Paths.Users.FooBar({ idd: 5, name: 'sean'}) // ERROR: key "id" is missing
+```ts
+Paths.Users.FooBar({ id: 5, name: 'sean', age: 4 }); // Error: too many keys
+Paths.Users.FooBar({ name: 'sean' });                // Error: missing key "id"
 ```
 
-### `regex:` (undefined | true | `RegExp` - default: `undefined`)
-- If you want to run a regular express everytime a URL function is called you can set the `regex` option to `true` which will use a default regular express. However, you can also pass your own regular expression to this option and jet-paths will use that instead.
+---
 
-```typescript
+### `regex` (`true` | `RegExp` | `undefined`, default: `undefined`)
+
+Enables regular expression validation every time a URL function is called.
+
+* `true` uses the default internal regular expression.
+* Providing a custom `RegExp` overrides the default.
+
+```ts
 const Paths = jetPaths({
   _: '/api',
   Users: {
     _: '/users',
-    One: '/:id'
+    One: '/:id',
   },
 }, { regex: true });
 
-Paths.Users.FooBar({ id: 5 }) // returns "/foo/sean/bar/5"
-Paths.Users.FooBar({ id: '12*&^ %134' }) // Will throw error
+Paths.Users.One({ id: 5 });            // OK
+Paths.Users.One({ id: '12*&^ %134' }); // Throws validation error
 ```
 
+---
 
-#### The `.insertUrlParams` function
+## `.insertUrlParams`
 
-- If you want to insert url parameters outside of your paths object for whatever reason you can import the `insertUrlParams` independently. For efficiency, this function wraps the url and returns another function which insert the variables. You can still pass an options object as your second parameter, however the `prepend` option is omitted. 
+If you need to insert URL parameters outside of a `jetPaths` object, you can import `insertUrlParams` directly. For efficiency, it returns a formatter function bound to the URL.
 
-```typescript
+```ts
 import { insertUrlParams } from 'jet-paths';
 
-// Runtime
-const formatPath = insertUrlParams('/foo/:name/bar/:id', { strictKeyNames: false });
+const formatPath = insertUrlParams('/foo/:name/bar/:id', {
+  strictKeyNames: false,
+});
 
-// Whenever your API is called
-formatPath({ id: 5, name: 'sean'}) // returns "/foo/sean/bar/5"
+formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
 ```
 
+---
 
-Happy web-deving :)
+## Final notes
+
+**jet-paths** is designed to scale cleanly from small projects to large, enterprise-grade applications—keeping your routing logic predictable, readable, and type-safe.
+
+Happy web development! 🚀

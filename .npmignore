@@ -3,12 +3,10 @@
 # ignore dev files
 src
 test
-rollup.config.mjs
 
 # not needed npm stuff
 package-lock.json
 node_modules
-tsconfig.json
-tsconfig.build.json
+**/**/tsconfig.*
 README.md
 assets

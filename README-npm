@@ -1,20 +1,13 @@
-# jet-paths 🧑✈️
-> Recursively formats an object of urls, so that full paths are setup automatically and you can quickly insert parameters.
-<br/>
+# jet-paths ✈️
 
-```typescript
-const Paths = jetPaths({
-  _: '/api',
-  Users: {
-    _: '/users',
-    Get: '/all',
-    One: '/:id'
-  },
-});
+[![npm version](https://img.shields.io/npm/v/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
+[![npm downloads](https://img.shields.io/npm/dm/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
+[![TypeScript](https://img.shields.io/badge/TypeScript-✔-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/npm/l/jet-paths.svg)](LICENSE)
 
-Paths.Users.Get // value is "/api/users/all"
-Paths.Users.One(5) // returns "/api/users/5"
-Paths.Users._ // value is "/api/users"
-```
+
+> A type-safe utility for defining, composing, and formatting URL paths using nested objects.
+
+Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert parameters easily and consistently.
 
 Please refer to the official <a href="https://github.com/seanpmaxwell/jet-paths">github repo</a> for the most up-to-date documentation.
