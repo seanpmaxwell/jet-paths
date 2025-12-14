@@ -39,6 +39,7 @@ const PATHS = {
  * Test jetPaths function
  */
 test('test jetPaths function and baseKey option', () => {
+  // Test the basics
   const pathsFull = jetPaths(PATHS);
   expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
   expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/posts/delete/5');
@@ -46,6 +47,8 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual('/api/posts/misc/67/something/bar');
   expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual('/api/posts/else/34/something/foo');
   expect(pathsFull.Posts.Misc()).toStrictEqual('/api/posts/misc/:id/something/:foo');
+  // Test strict key check here
+  // pick up here
 });
 
 /**
@@ -80,7 +83,6 @@ test('test insertUrlParams function', () => {
   expect(paths.Users.Delete({ id: 5, foo: 'bar' }))
     .toStrictEqual('localhost:3000/api/users/delete/5');
 });
-
 
 /**
  * Test more jetPaths prepending
