@@ -20,7 +20,7 @@ const Paths = jetPaths({
     _: '/users',
     Get: '/all',
     One: '/:id',
-  },**/**/tsconfig.*
+  },
 });
 
 Paths.Users.Get        // "/api/users/all"
