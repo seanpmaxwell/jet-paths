@@ -1,16 +1,16 @@
 {
   "name": "jet-paths",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A TypeScript-first utility for composing, validating, and formatting URL paths using nested objects.",
   "type": "module",
-  "main": "./dist/cjs/index.cjs",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "browser": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
+      "require": "./dist/cjs/index.js",
       "types": "./dist/types/index.d.ts"
     }
   },
