@@ -144,13 +144,13 @@ Key behaviors to note:
 
 ## Options ⚙️
 
-### `prepend` (`string` | `undefined`, default: `undefined`)
+#### `prepend` (`string` | `undefined`, default: `undefined`)
 
 Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
 
 ---
 
-### `strictKeyNames` (`boolean`, default: `true`)
+#### `strictKeyNames` (`boolean`, default: `true`)
 
 When enabled, object keys passed to a URL function must exactly match the URL parameter names—no more, no fewer. Any mismatch will throw an error.
 
@@ -161,7 +161,7 @@ Paths.Users.FooBar({ name: 'sean' });                // Error: missing key "id"
 
 ---
 
-### `regex` (`true` | `RegExp` | `undefined`, default: `undefined`)
+#### `regex` (`true` | `RegExp` | `undefined`, default: `undefined`)
 
 Enables regular expression validation every time a URL function is called.
 
@@ -183,7 +183,7 @@ Paths.Users.One({ id: '12*&^ %134' }); // Throws validation error
 
 ---
 
-### `.insertUrlParams`
+#### `.insertUrlParams`
 
 If you need to insert URL parameters outside of a `jetPaths` object, you can import `insertUrlParams` directly. For efficiency, it returns a formatter function bound to the URL.
 
@@ -198,9 +198,5 @@ formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
 ```
 <br/>
 
-
-## Final notes 📝 
-
-**jet-paths** is designed to scale cleanly from small projects to large, enterprise-grade applications—keeping your routing logic predictable, readable, and type-safe.
 
 Happy web dev-ing! 🚀
