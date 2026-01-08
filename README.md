@@ -37,10 +37,10 @@ Paths.Users._          // "/api/users"
 
 ![vscode-1](./assets/vscode-1.png)
 ![vscode-2](./assets/vscode-2.png)
-<br/><br/>
 
+---
 
-## Keep your routes organized 🗂️
+### Keep your routes organized
 
 With **jet-paths**, you can keep all routes for your entire application neatly formatted into a single object—without repetitive prefixes or custom wrapper functions to insert URL parameters.
 
@@ -58,10 +58,10 @@ const BASE_USERS = `${BASE}/users`;
   // ...more routes
 }
 ```
-<br/>
 
+---
 
-## Insert variables into URLs 🔽
+### Insert variables into URLs
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 
