@@ -6,13 +6,11 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/jet-paths?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-paths)
 [![License](https://img.shields.io/npm/l/jet-paths.svg)](LICENSE)
 
-
 > A type-safe utility for defining, composing, and formatting URL paths using nested objects.
 
 Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert parameters easily and consistently.
 
----
-
+At a glance:
 ```ts
 const Paths = jetPaths({
   _: '/api',
@@ -27,10 +25,10 @@ Paths.Users.Get        // "/api/users/all"
 Paths.Users.One(5)     // "/api/users/5"
 Paths.Users._          // "/api/users"
 ```
+<br/>
 
----
 
-## Why jet-paths?
+## Why jet-paths? 🤔
 
 * Automatically sets up full URLs using nested objects, avoiding repeated prefixes and boilerplate.
 * URLs with parameters are automatically converted into functions for easy value insertion.
@@ -39,10 +37,10 @@ Paths.Users._          // "/api/users"
 
 ![vscode-1](./assets/vscode-1.png)
 ![vscode-2](./assets/vscode-2.png)
+<br/><br/>
 
----
 
-## Keep your routes organized
+## Keep your routes organized 🗂️
 
 With **jet-paths**, you can keep all routes for your entire application neatly formatted into a single object—without repetitive prefixes or custom wrapper functions to insert URL parameters.
 
@@ -60,10 +58,10 @@ const BASE_USERS = `${BASE}/users`;
   // ...more routes
 }
 ```
+<br/>
 
----
 
-## Insert variables into URLs
+## Insert variables into URLs 🔽
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 
@@ -81,18 +79,16 @@ const Paths = jetPaths({
 Paths.Users.FooBar({ id: 5, name: 'sean' });
 // "/api/users/foo/sean/bar/5"
 ```
+<br/>
 
----
 
-## Quick Start
+## Quick Start ⚡
 
 ### Installation
 
 ```bash
 npm install jet-paths
 ```
-
----
 
 ### Example
 
@@ -129,10 +125,10 @@ The object above is formatted into fully qualified, type-safe routes:
 Paths.Users._;               // "/localhost:3000/api/users"
 Paths.Users.Delete({ id: 1 });
 ```
+<br/>
 
----
 
-## Passing arguments to URL functions
+## Passing arguments to URL functions 📥
 
 You may pass an object, a primitive, or no arguments at all when calling a URL function.
 
@@ -143,10 +139,10 @@ Key behaviors to note:
 * When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
 * Calling the function with no arguments returns the unformatted URL.
 * `null` may be inserted, but `undefined` must be converted to a string explicitly.
+<br/>
 
----
 
-## Options
+## Options ⚙️
 
 ### `prepend` (`string` | `undefined`, default: `undefined`)
 
@@ -187,7 +183,7 @@ Paths.Users.One({ id: '12*&^ %134' }); // Throws validation error
 
 ---
 
-## `.insertUrlParams`
+### `.insertUrlParams`
 
 If you need to insert URL parameters outside of a `jetPaths` object, you can import `insertUrlParams` directly. For efficiency, it returns a formatter function bound to the URL.
 
@@ -200,11 +196,11 @@ const formatPath = insertUrlParams('/foo/:name/bar/:id', {
 
 formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
 ```
+<br/>
 
----
 
-## Final notes
+## Final notes 📝 
 
 **jet-paths** is designed to scale cleanly from small projects to large, enterprise-grade applications—keeping your routing logic predictable, readable, and type-safe.
 
-Happy web development! 🚀
+Happy web dev-ing! 🚀
