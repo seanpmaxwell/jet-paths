@@ -25,10 +25,10 @@ Paths.Users.Get        // "/api/users/all"
 Paths.Users.One(5)     // "/api/users/5"
 Paths.Users._          // "/api/users"
 ```
-<br/>
 
+<br/><b>***</b><br/>
 
-## Why jet-paths? 🤔
+## 🤔 Why jet-paths?
 
 * Automatically sets up full URLs using nested objects, avoiding repeated prefixes and boilerplate.
 * URLs with parameters are automatically converted into functions for easy value insertion.
@@ -79,10 +79,10 @@ const Paths = jetPaths({
 Paths.Users.FooBar({ id: 5, name: 'sean' });
 // "/api/users/foo/sean/bar/5"
 ```
-<br/>
 
+<br/><b>***</b><br/>
 
-## Quick Start ⚡
+## ⚡ Quick Start
 
 ### Installation
 
@@ -125,10 +125,10 @@ The object above is formatted into fully qualified, type-safe routes:
 Paths.Users._;               // "/localhost:3000/api/users"
 Paths.Users.Delete({ id: 1 });
 ```
-<br/>
 
+<br/><b>***</b><br/>
 
-## Passing arguments to URL functions 📥
+## 📥 Passing arguments to URL functions
 
 You may pass an object, a primitive, or no arguments at all when calling a URL function.
 
@@ -139,10 +139,10 @@ Key behaviors to note:
 * When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
 * Calling the function with no arguments returns the unformatted URL.
 * `null` may be inserted, but `undefined` must be converted to a string explicitly.
-<br/>
 
+<br/><b>***</b><br/>
 
-## Options ⚙️
+## ⚙️ Options
 
 #### `prepend` (`string` | `undefined`, default: `undefined`)
 
