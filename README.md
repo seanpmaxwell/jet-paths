@@ -196,7 +196,12 @@ const formatPath = insertUrlParams('/foo/:name/bar/:id', {
 
 formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
 ```
+
+<br/><b>***</b><br/>
+
+## 📄 License 
+
+MIT © [seanpmaxwell1](LICENSE)
 <br/>
 
-
-Happy web dev-ing! 🚀
+Happy web deving! 🚀
