@@ -37,7 +37,8 @@ Paths.Users._          // "/api/users"
 
 ![vscode-1](./assets/vscode-1.png)
 
-Functions are fully type-safe too ;)
+- Functions are fully type-safe too ;)
+
 ![vscode-2](./assets/vscode-2.png)
 
 ---
