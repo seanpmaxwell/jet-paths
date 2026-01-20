@@ -36,6 +36,8 @@ Paths.Users._          // "/api/users"
 * **TypeScript-first** and fully type-safe.
 
 ![vscode-1](./assets/vscode-1.png)
+
+Functions are fully type-safe too ;)
 ![vscode-2](./assets/vscode-2.png)
 
 ---
