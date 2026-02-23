@@ -55,8 +55,16 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
-    "tslib": "^2.6.3",
+    "@eslint/js": "^9.26.0",
+    "@stylistic/eslint-plugin": "^5.6.1",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.1",
+    "@types/node": "^22.8.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.8",
+    "jiti": "^2.6.1",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.3",
+    "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.15"
   }
 }

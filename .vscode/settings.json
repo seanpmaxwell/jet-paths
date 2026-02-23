@@ -1,0 +1,39 @@
+{
+  "editor.minimap.enabled": false,
+  "editor.rulers": [80],
+  "editor.tabSize": 2,
+
+  "workbench.sideBar.location": "right",
+  "workbench.editor.empty.hint": "hidden",
+
+  // Formatting: Prettier only
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // ESLint: linting only (NO formatting)
+  "eslint.format.enable": false,
+  "eslint.nodePath": "node_modules",
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+
+  // Run ESLint fixes (non-formatting) on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Language overrides (keep Prettier)
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // JSDoc noise reduction
+  "javascript.suggest.completeJSDocs": false,
+  "javascript.suggest.jsdoc.generateReturns": false,
+  "typescript.suggest.completeJSDocs": false,
+  "typescript.suggest.jsdoc.generateReturns": false
+}
