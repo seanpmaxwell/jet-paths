@@ -1,19 +1,28 @@
 import { BASE_KEY, DEFAULT_REGEX, Errors } from './constants';
-import type { ArgObj, IOptions, ResolveRetVal, URLParams } from './types';
+import type {
+  ArgObj,
+  IOptions,
+  PlainDataObject,
+  RetVal,
+  URLParams,
+} from './types';
 
 /******************************************************************************
-                                       Types                                    
+                                   Constants
 ******************************************************************************/
 
-type CollpaseType2<T> = T extends unknown ? T : never;
+const APPEND_QUERY_PARAMS_BASE = 'https://localhost';
 
-// Must be defined in the file it is used in
+/******************************************************************************
+                                   Types
+******************************************************************************/
+
 type CollapseType<T> = {
   -readonly [K in keyof T]: T[K];
 } & {};
 
 /******************************************************************************
-                               Functions
+                                  Functions
 ******************************************************************************/
 
 /**
@@ -22,7 +31,7 @@ type CollapseType<T> = {
 function setupPaths<
   const T extends ArgObj,
   const U extends IOptions | undefined,
->(pathObj: T, options?: U): CollpaseType2<CollapseType<ResolveRetVal<T, U>>> {
+>(pathObj: T, options?: U): CollapseType<RetVal<T, U>> {
   // Setup baseUrl/keynames
   const baseUrl = options?.prepend ?? '',
     strictKeyNames = options?.strictKeyNames ?? true;
@@ -151,45 +160,24 @@ function stripQueryAndHash(
   return pathRegex.test(fullPath);
 }
 
-// /**
-//  * Append query params from an object to an existing URL string.
-//  * Works with absolute URLs and relative URLs in Node.js 24.
-//  *
-//  * @param {string} urlString - Existing URL (absolute or relative)
-//  * @param {Record<string, any>} params - Object to convert into query params
-//  * @returns {string} - URL string with appended query params
-//  */
-// function appendQueryParams(urlString, params = {}) {
-//   // Use a dummy base so relative URLs can be parsed
-//   const isAbsolute = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(urlString);
-//   const base = 'http://localhost';
-//   const url = new URL(urlString, base);
-
-//   for (const [key, value] of Object.entries(params)) {
-//     if (value == null) continue; // skip null / undefined
-
-//     if (Array.isArray(value)) {
-//       // Repeat key for arrays: ?tag=a&tag=b
-//       for (const item of value) {
-//         if (item != null) url.searchParams.append(key, String(item));
-//       }
-//     } else if (value instanceof Date) {
-//       url.searchParams.append(key, value.toISOString());
-//     } else if (typeof value === 'object') {
-//       // Serialize nested objects as JSON
-//       url.searchParams.append(key, JSON.stringify(value));
-//     } else {
-//       url.searchParams.append(key, String(value));
-//     }
-//   }
-
-//   // Preserve relative URLs if input was relative
-//   if (!isAbsolute) {
-//     return `${url.pathname}${url.search}${url.hash}`;
-//   }
-
-//   return url.toString();
-// }
+/**
+ *
+ * Append query params from an object to an existing URL string. Works with
+ * absolute URLs and relative URLs in Node.js 24.
+ */
+function appendQueryParams(urlStr: string, params: PlainDataObject): string {
+  const url = new URL(urlStr, APPEND_QUERY_PARAMS_BASE);
+  for (const [key, value] of Object.entries(params)) {
+    if (value instanceof Date) {
+      url.searchParams.append(key, value.toISOString());
+    } else if (typeof value === 'object') {
+      url.searchParams.append(key, JSON.stringify(value));
+    } else {
+      url.searchParams.append(key, String(value));
+    }
+  }
+  return url.toString().slice(APPEND_QUERY_PARAMS_BASE.length);
+}
 
 // ------------------------ Independent Functions -------------------------- //
 

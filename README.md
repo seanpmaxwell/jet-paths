@@ -35,11 +35,15 @@ Paths.Users._          // "/api/users"
 * Optional regular expression validation ensures URLs conform to a specific format.
 * **TypeScript-first** and fully type-safe.
 
-![vscode-1](./assets/vscode-1.png)
+<p align="center">
+  <img src="./assets/vscode-1.png" alt="vscode-1" style="border-radius: 12px;" />
+</p>
 
 - Functions are fully type-safe too ;)
 
-![vscode-2](./assets/vscode-2.png)
+<p align="center">
+  <img src="./assets/vscode-2.png" alt="vscode-2" style="border-radius: 12px;" />
+</p>
 
 ---
 

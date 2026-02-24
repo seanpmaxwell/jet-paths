@@ -9,6 +9,10 @@ type URLParamObject = Record<string, URLParam>;
 export type URLParams = URLParam | URLParamObject;
 type BaseKey = typeof BASE_KEY;
 
+type CollapseType<T> = {
+  -readonly [K in keyof T]: T[K];
+} & {};
+
 export type ArgObj = {
   _: string;
   [key: string]: string | ArgObj;
@@ -20,7 +24,7 @@ export interface IOptions {
   regex?: true | RegExp;
 }
 
-// ------------------------------- Iterate --------------------------------- //
+// ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
   ? (urlParams?: URLParams) => S
@@ -31,11 +35,11 @@ type Iterate<T extends object> = {
   [K in keyof T]: T[K] extends string
     ? ResolveType<T[K]>
     : T[K] extends object
-      ? Iterate<T[K]>
+      ? CollapseType<Iterate<T[K]>>
       : never;
 };
 
-// --------------------------- ExpandPaths --------------------------------- //
+// -- ExpandPaths -- //
 
 // Joins two path segments, handling slashes cleanly.
 type Join<A extends string, B extends string> = A extends ''
@@ -55,7 +59,7 @@ type ExpandPaths<T extends ArgObj, Prefix extends string> = {
       : never;
 };
 
-// ------------------------------ Setup Prefix ----------------------------- //
+// -- SetupPrefix -- //
 
 type SetupPrefix<
   T extends ArgObj,
@@ -68,16 +72,16 @@ type SetupPrefix<
       : T[BaseKey]
     : never;
 
-// ------------------------------- ResolveRetVal --------------------------- //
+// -- RetVal -- //
 
-// pick up here, get CollapseType working
+export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
+  ExpandPaths<T, SetupPrefix<T, U>>
+>;
 
-// Must be defined in the file it is used in
-type Collapse<T> = {
-  -readonly [K in keyof T]: T[K];
-} & {};
+// ------------------------- Appending Search Params ----------------------- //
 
-export type ResolveRetVal<
-  T extends ArgObj,
-  U extends IOptions | undefined,
-> = Collapse<Iterate<ExpandPaths<T, SetupPrefix<T, U>>>>;
+type Primitive = string | number | boolean | null;
+type PlainDataArray = (Primitive | Date | PlainDataObject | PlainDataArray)[];
+export type PlainDataObject = {
+  [key: string]: Primitive | Date | PlainDataObject | PlainDataArray;
+};
