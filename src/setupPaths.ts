@@ -171,6 +171,8 @@ function stripQueryAndHash(
 }
 
 /**
+ * @private
+ * @see setupPathsHelper
  *
  * Append query params from an object to an existing URL string. Works with
  * absolute URLs and relative URLs in Node.js 24.
