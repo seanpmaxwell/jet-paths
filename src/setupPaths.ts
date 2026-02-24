@@ -63,6 +63,7 @@ function setupPathsHelper(
   strictKeyNames: boolean,
   regex: null | RegExp,
   parentName: string,
+  queryParams?: PlainDataObject,
 ): Record<string, unknown> {
   // Validate base key
   if (typeof parentObj[BASE_KEY] !== 'string') {
@@ -79,11 +80,20 @@ function setupPathsHelper(
       const finalUrl = url + pval;
       if (finalUrl.includes('/:')) {
         retVal[key] = setupInsertUrlParamsFn(finalUrl, strictKeyNames, regex);
+      } else if (finalUrl.includes('+?') && queryParams) {
+        retVal[key] = appendQueryParams(finalUrl, queryParams);
       } else {
         retVal[key] = finalUrl;
       }
     } else if (typeof pval === 'object') {
-      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, regex, key);
+      retVal[key] = setupPathsHelper(
+        pval,
+        url,
+        strictKeyNames,
+        regex,
+        key,
+        queryParams,
+      );
     }
   }
   // Return
@@ -166,7 +176,7 @@ function stripQueryAndHash(
  * absolute URLs and relative URLs in Node.js 24.
  */
 function appendQueryParams(urlStr: string, params: PlainDataObject): string {
-  const url = new URL(urlStr, APPEND_QUERY_PARAMS_BASE);
+  const url = new URL(urlStr.slice(0, -2), APPEND_QUERY_PARAMS_BASE);
   for (const [key, value] of Object.entries(params)) {
     if (value instanceof Date) {
       url.searchParams.append(key, value.toISOString());
