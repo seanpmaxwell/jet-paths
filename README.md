@@ -36,13 +36,13 @@ Paths.Users._          // "/api/users"
 * **TypeScript-first** and fully type-safe.
 
 <p align="center">
-  <img src="./assets/vscode-1.png" alt="vscode-1" style="border-radius: 12px;" />
+  <img src="./assets/vscode-1.png" alt="vscode-1" style="border-radius: 15px;" />
 </p>
 
 - Functions are fully type-safe too ;)
 
 <p align="center">
-  <img src="./assets/vscode-2.png" alt="vscode-2" style="border-radius: 12px;" />
+  <img src="./assets/vscode-2.png" alt="vscode-2" style="border-radius: 15px;" />
 </p>
 
 ---
