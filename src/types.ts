@@ -27,8 +27,12 @@ export interface IOptions {
 // ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
-  ? (urlParams?: URLParams) => S
-  : S;
+  ? S extends `${string}/+?`
+    ? (urlParams?: URLParams, queryParams?: PlainDataObject) => S
+    : (urlParams?: URLParams) => S
+  : S extends `${string}/+?`
+    ? (queryParams?: PlainDataObject) => S
+    : S;
 
 // Set string or function type
 type Iterate<T extends object> = {
@@ -80,7 +84,7 @@ export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
 
 // ------------------------- Appending Search Params ----------------------- //
 
-type Primitive = string | number | boolean | null;
+type Primitive = string | number | boolean | null | undefined;
 type PlainDataArray = (Primitive | Date | PlainDataObject | PlainDataArray)[];
 export type PlainDataObject = {
   [key: string]: Primitive | Date | PlainDataObject | PlainDataArray;

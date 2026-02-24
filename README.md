@@ -8,7 +8,7 @@
 
 > A type-safe utility for defining, composing, and formatting URL paths using nested objects.
 
-Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert parameters easily and consistently.
+Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path-params and query-params easily and consistently.
 
 At a glance:
 
@@ -31,7 +31,7 @@ Paths.Users._; // "/api/users"
 
 ## 🤔 Why jet-paths?
 
-- Automatically sets up full URLs using nested objects, avoiding repeated prefixes and boilerplate.
+- Automatically sets up full URLs using nested objects, avoiding repeated prefixes.
 - URLs with parameters are automatically converted into functions for easy value insertion.
 - Optional regular expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
@@ -69,7 +69,7 @@ const BASE_USERS = `${BASE}/users`;
 
 ---
 
-### Insert variables into URLs
+### Insert path paramters
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 

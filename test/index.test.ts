@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest';
+
 import jetPaths, { insertUrlParams } from '../src';
 
 /******************************************************************************
@@ -29,7 +30,7 @@ const PATHS = {
       Delete: '/delete/:id',
     },
   },
-  Foo: '/foo'
+  Foo: '/foo',
 } as const;
 
 const PATHS_2 = {
@@ -67,11 +68,19 @@ test('test jetPaths function and baseKey option', () => {
   // Test the basics
   const pathsFull = jetPaths(PATHS, { strictKeyNames: false });
   expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
-  expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual('/api/posts/delete/5');
+  expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
+    '/api/posts/delete/5',
+  );
   expect(pathsFull.Posts._).toStrictEqual('/api/posts');
-  expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual('/api/posts/misc/67/something/bar');
-  expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual('/api/posts/else/34/something/foo');
-  expect(pathsFull.Posts.Misc()).toStrictEqual('/api/posts/misc/:id/something/:foo');
+  expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
+    '/api/posts/misc/67/something/bar',
+  );
+  expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual(
+    '/api/posts/else/34/something/foo',
+  );
+  expect(pathsFull.Posts.Misc()).toStrictEqual(
+    '/api/posts/misc/:id/something/:foo',
+  );
 });
 
 /**
@@ -96,8 +105,9 @@ test('test insertUrlParams function', () => {
   });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
-  expect(paths.Users.Delete({ id: 5, foo: 'bar' }))
-    .toStrictEqual('localhost:3000/api/users/delete/5');
+  expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
+    'localhost:3000/api/users/delete/5',
+  );
 });
 
 /**
@@ -108,9 +118,10 @@ test('test insertUrlParams function with prepend options', () => {
   const paths = jetPaths(PATHS_3, { prepend: PREPEND, strictKeyNames: false });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
-    expect(paths.Users.One(null)).toStrictEqual('localhost:3000/api/users/null');
-  expect(paths.Users.Delete({ id: 5, foo: 'bar' }))
-    .toStrictEqual('localhost:3000/api/users/delete/5');
+  expect(paths.Users.One(null)).toStrictEqual('localhost:3000/api/users/null');
+  expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
+    'localhost:3000/api/users/delete/5',
+  );
 });
 
 /**
@@ -118,12 +129,41 @@ test('test insertUrlParams function with prepend options', () => {
  */
 test.only('test jetPaths function and baseKey option', () => {
   const pathsFull = jetPaths(PATHS, { regex: true });
-  expect(() => pathsFull.Posts.Other({ id: 5, name: 'john' })).not.toThrowError();
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'john' }),
+  ).not.toThrowError();
   expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
-  expect(() => pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' })).toThrowError();
-  expect(() => pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 })).toThrowError();
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
+  ).toThrowError();
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
+  ).toThrowError();
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
   const pathsCustomRegex = jetPaths(PATHS, { regex: /^.*$/s });
-  expect(() => pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' })).not.toThrowError();
+  expect(() =>
+    pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
+  ).not.toThrowError();
 });
 
+/**
+ * Test appendQuery
+ */
+test.only('test jetPaths function and baseKey option', () => {
+  const pathsFull = jetPaths(PATHS, { regex: true });
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'john' }),
+  ).not.toThrowError();
+  expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
+  ).toThrowError();
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
+  ).toThrowError();
+  expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
+  const pathsCustomRegex = jetPaths(PATHS, { regex: /^.*$/s });
+  expect(() =>
+    pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
+  ).not.toThrowError();
+});
