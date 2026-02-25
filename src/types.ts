@@ -4,9 +4,9 @@ import type { BASE_KEY } from './constants';
                                    Types
 ******************************************************************************/
 
-type URLParam = string | number | boolean | null | undefined;
-type URLParamObject = Record<string, URLParam>;
-export type URLParams = URLParam | URLParamObject;
+type Primitive = string | number | boolean | null | undefined;
+export type URLParams = Primitive | Record<string, Primitive>;
+
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
@@ -21,17 +21,17 @@ export type ArgObj = {
 export interface IOptions {
   prepend?: string;
   strictKeyNames?: boolean;
-  regex?: true | RegExp;
+  regex?: RegExp | boolean;
 }
 
 // ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
-  ? S extends `${string}/+?`
-    ? (urlParams?: URLParams, queryParams?: PlainDataObject) => S
-    : (urlParams?: URLParams) => S
-  : S extends `${string}/+?`
-    ? (queryParams?: PlainDataObject) => S
+  ? S extends `${string}?${string}`
+    ? (urlParams: URLParams, queryParams: PlainDataObject) => S
+    : (urlParams: URLParams) => S
+  : S extends `${string}?${string}`
+    ? (queryParams: PlainDataObject) => S
     : S;
 
 // Set string or function type
@@ -84,7 +84,6 @@ export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
 
 // ------------------------- Appending Search Params ----------------------- //
 
-type Primitive = string | number | boolean | null | undefined;
 type PlainDataArray = (Primitive | Date | PlainDataObject | PlainDataArray)[];
 export type PlainDataObject = {
   [key: string]: Primitive | Date | PlainDataObject | PlainDataArray;

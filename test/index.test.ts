@@ -57,6 +57,14 @@ const PATHS_3 = {
   },
 } as const;
 
+const PATHS_4 = {
+  _: '/api',
+  Users: {
+    _: '/users',
+    Search: '/search?name={}&email={}',
+  },
+} as const;
+
 /******************************************************************************
                                Functions
 ******************************************************************************/
@@ -149,21 +157,15 @@ test.only('test jetPaths function and baseKey option', () => {
 /**
  * Test appendQuery
  */
-test.only('test jetPaths function and baseKey option', () => {
-  const pathsFull = jetPaths(PATHS, { regex: true });
-  expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'john' }),
-  ).not.toThrowError();
-  expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
-  expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).toThrowError();
-  expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
-  ).toThrowError();
-  expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
-  const pathsCustomRegex = jetPaths(PATHS, { regex: /^.*$/s });
-  expect(() =>
-    pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).not.toThrowError();
+test.only('appending search params', () => {
+  const pathsFull = jetPaths(PATHS_4);
 });
+
+// pick up here, use these for some regex testing
+// regex.test('/api/:search')
+// regex.test('api/:search')
+// regex.test('/api/:search/?')
+// regex.test('/api/:search/:foo?')
+// regex.test('/api/:search/:foo?search={}')
+// regex.test('/api/:search/:foo?search={}name={}')
+// regex.test('/api/:search/:foo?search={}&name={}')

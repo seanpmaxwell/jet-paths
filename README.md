@@ -172,12 +172,13 @@ Paths.Users.FooBar({ name: 'sean' }); // Error: missing key "id"
 
 ---
 
-#### `regex` (`true` | `RegExp` | `undefined`, default: `undefined`)
+#### `regex` (`RegExp` | `boolean`, default: `true`)
 
 Enables regular expression validation every time a URL function is called.
 
-- `true` uses the default internal regular expression.
+- `true` (default) uses an internal regular expression.
 - Providing a custom `RegExp` overrides the default.
+- Pass `null` if you want to disable regular expression validation
 
 ```ts
 const Paths = jetPaths(

@@ -1,9 +1,9 @@
-import jetPaths, { externalSetupInsertUrlParamsFn } from './setupPaths.js';
+import jetPaths, { setupExternalFormatURLFn } from './setupPaths.js';
 
 /******************************************************************************
                                  Export
 ******************************************************************************/
 
 export { type URLParams } from './types.js';
-export const insertUrlParams = externalSetupInsertUrlParamsFn;
+export const insertUrlParams = setupExternalFormatURLFn;
 export default jetPaths;
