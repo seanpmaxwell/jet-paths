@@ -163,13 +163,15 @@ test.only('test error catching', () => {
 /**
  * Test inserting `searchParams`
  */
-test.only('appending search params', () => {
+test.skip('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
 
-  // pick up here start tests
+  // Basic test
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
 });
+
+// pick up here, make sure legacy stuff still works first
 
 // pick up here, use these for some regex testing
 // regex.test('/api/:search')

@@ -36,13 +36,13 @@ Paths.Users._; // "/api/users"
 - Optional regular expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
 
-<p align="center">
+<p>
   <img src="./assets/vscode-1.png" alt="vscode-1" />
 </p>
 
 - Functions are fully type-safe too ;)
 
-<p align="center">
+<p>
   <img src="./assets/vscode-2.png" alt="vscode-2" />
 </p>
 
