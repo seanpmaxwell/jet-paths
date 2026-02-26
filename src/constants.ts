@@ -4,7 +4,8 @@
 
 // Misc
 export const BASE_KEY = '_';
-export const DEFAULT_REGEX = /^[A-Za-z0-9_\/-]+$/;
+export const DEFAULT_REGEX =
+  /^\/(?:[A-Za-z0-9._~-]+|:[A-Za-z][A-Za-z0-9_]*)(?:\/(?:[A-Za-z0-9._~-]+|:[A-Za-z][A-Za-z0-9_]*))*(?:\?[A-Za-z][A-Za-z0-9_]*=\{\}(?:&[A-Za-z][A-Za-z0-9_]*=\{\})*)?$/;
 
 // Errors
 export const Errors = {

@@ -2,16 +2,10 @@ import { BASE_KEY, DEFAULT_REGEX, Errors } from './constants';
 import type {
   ArgObj,
   IOptions,
-  PlainDataObject,
+  PathParams,
   RetVal,
-  URLParams,
+  SearchParams,
 } from './types';
-
-/******************************************************************************
-                                   Constants
-******************************************************************************/
-
-const APPEND_QUERY_PARAMS_BASE = 'https://localhost';
 
 /******************************************************************************
                                    Types
@@ -35,20 +29,8 @@ function setupPaths<
   // Setup baseUrl/keynames
   const baseUrl = options?.prepend ?? '',
     strictKeyNames = options?.strictKeyNames ?? true;
-  // Init regex
-  const regex = options?.regex
-    ? options.regex === true
-      ? DEFAULT_REGEX
-      : options.regex
-    : null;
   // Return
-  return setupPathsHelper(
-    pathObj,
-    baseUrl,
-    strictKeyNames,
-    regex,
-    'root',
-  ) as any;
+  return setupPathsHelper(pathObj, baseUrl, strictKeyNames, 'root') as any;
 }
 
 /**
@@ -61,7 +43,6 @@ function setupPathsHelper(
   parentObj: Record<string, string | ArgObj>,
   baseUrl: string,
   strictKeyNames: boolean,
-  regex: null | RegExp,
   parentName: string,
 ): Record<string, unknown> {
   // Validate base key
@@ -76,14 +57,17 @@ function setupPathsHelper(
   for (const key of keys) {
     const pval = parentObj[key];
     if (key !== BASE_KEY && typeof pval === 'string') {
-      const finalUrl = url + pval;
-      if (finalUrl.includes('/:')) {
-        retVal[key] = setupInsertUrlParamsFn(finalUrl, strictKeyNames, regex);
+      const fullURL = url + pval;
+      if (!DEFAULT_REGEX.test(fullURL)) {
+        throw new Error(Errors.REGEX);
+      }
+      if (fullURL.includes('/:') || fullURL.includes('?')) {
+        retVal[key] = setupFormatURLFn(fullURL, strictKeyNames);
       } else {
-        retVal[key] = finalUrl;
+        retVal[key] = fullURL;
       }
     } else if (typeof pval === 'object') {
-      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, regex, key);
+      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, key);
     }
   }
   // Return
@@ -96,87 +80,121 @@ function setupPathsHelper(
  *
  * Initialize the function which setups up the url params
  */
-function setupInsertUrlParamsFn(
-  path: string,
-  strictKeyNames = true,
-  regex: RegExp | null = null,
-) {
-  const urlArr = path.split('/').filter(Boolean);
+function setupFormatURLFn(fullURL: string, strictKeyNames = true) {
+  const fullUrlArr = fullURL.split('?').filter(Boolean),
+    [pathUrl, searchUrl] = fullUrlArr;
   // Get the indexes where a variable exists
-  const paramIndexes: number[] = [];
-  urlArr.forEach((param, i) => {
+  const pathUrlArr = pathUrl.split('/').filter(Boolean),
+    pathParamIndexes: number[] = [];
+  pathUrlArr.forEach((param, i) => {
     if (param.startsWith(':')) {
-      paramIndexes.push(i);
-      urlArr[i] = urlArr[i].slice(1);
+      pathParamIndexes.push(i);
+      pathUrlArr[i] = pathUrlArr[i].slice(1);
     }
   });
-  // Return the InsertUrlParams function
-  return (paramsArg?: URLParams) => {
-    if (paramsArg === undefined) {
-      return path;
-    }
-    const isParamObject = !!paramsArg && typeof paramsArg === 'object';
-    // Check the number of keys
-    if (strictKeyNames && isParamObject) {
-      if (Object.keys(paramsArg).length !== paramIndexes.length) {
-        throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
-      }
-    }
-    // Setup the URL to return
-    const urlArrClone = [...urlArr];
-    paramIndexes.forEach((index) => {
-      const key = urlArrClone[index];
-      if (isParamObject) {
-        if (strictKeyNames && !(key in paramsArg)) {
-          throw new Error(Errors.StrictKeyName(key));
-        }
-        urlArrClone[index] = String(paramsArg[key]);
-      } else if (paramsArg !== undefined) {
-        urlArrClone[index] = String(paramsArg);
-      }
-    });
-    // Check the regex if truthy
-    const finalUrl = (path.startsWith('/') ? '/' : '') + urlArrClone.join('/');
-    if (!stripQueryAndHash(finalUrl, regex)) {
-      throw new Error(Errors.REGEX);
-    }
-    return finalUrl;
-  };
+  // Get a list of the searchParams
+  const searchParamArr = searchUrl.split('&').map((pair) => pair.split('=')[0]);
+  // Insert `PathParams` and `SearchParams`
+  if (pathParamIndexes.length > 0 && searchParamArr.length > 0) {
+    return (pathParams?: PathParams, searchParams?: SearchParams): string => {
+      const finalPathUrl = insertPathParams(
+        strictKeyNames,
+        pathUrlArr,
+        pathParamIndexes,
+        pathParams,
+      );
+      const finalSearchUrl = insertSearchParams(
+        searchParamArr,
+        searchParams,
+        strictKeyNames,
+      );
+      return finalPathUrl + finalSearchUrl;
+    };
+    // Insert `PathParams`
+  } else if (pathParamIndexes.length > 0) {
+    return (pathParams?: PathParams) =>
+      insertPathParams(
+        strictKeyNames,
+        pathUrlArr,
+        pathParamIndexes,
+        pathParams,
+      );
+    // Insert `SearchParams`
+  } else if (searchParamArr.length > 0) {
+    return (searchParams?: SearchParams) =>
+      insertSearchParams(searchParamArr, searchParams, strictKeyNames);
+    // No `params`
+  } else {
+    return () => fullURL;
+  }
 }
 
 /**
  * @private
- * @see setupInsertUrlParamsFn
+ * @see setupPathsHelper
  *
- * Check the regex if truthy
+ * Initialize the function which setups up the url params
  */
-function stripQueryAndHash(
-  fullPath: string,
-  pathRegex: RegExp | null,
-): boolean {
-  if (!pathRegex) {
-    return true;
+function insertPathParams(
+  strictKeyNames: boolean,
+  pathUrlArr: string[],
+  pathParamIndexes: number[],
+  valuesObj?: PathParams,
+): string {
+  // Validate
+  if (valuesObj === undefined) {
+    return '';
+  } else if (Object.keys(valuesObj).length !== pathParamIndexes.length) {
+    throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
   }
-  return pathRegex.test(fullPath);
+  // Setup the URL to return
+  const urlArrClone = [...pathUrlArr];
+  pathParamIndexes.forEach((index) => {
+    const key = urlArrClone[index];
+    if (strictKeyNames && !(key in valuesObj)) {
+      const message = Errors.StrictKeyName(key);
+      throw new Error(message);
+    }
+    urlArrClone[index] = String(valuesObj[key]);
+  });
+  // Return
+  return '/' + urlArrClone.join('/');
 }
 
 /**
+ * @private
+ * @see setupPathsHelper
  *
  * Append query params from an object to an existing URL string. Works with
  * absolute URLs and relative URLs in Node.js 24.
  */
-function appendQueryParams(urlStr: string, params: PlainDataObject): string {
-  const url = new URL(urlStr, APPEND_QUERY_PARAMS_BASE);
-  for (const [key, value] of Object.entries(params)) {
-    if (value instanceof Date) {
-      url.searchParams.append(key, value.toISOString());
-    } else if (typeof value === 'object') {
-      url.searchParams.append(key, JSON.stringify(value));
-    } else {
-      url.searchParams.append(key, String(value));
-    }
+function insertSearchParams(
+  searchParamArr: string[],
+  valuesObj?: SearchParams,
+  strictKeyNames = false,
+): string {
+  // Validate
+  if (valuesObj === undefined) {
+    return '';
+  } else if (Object.keys(valuesObj).length !== searchParamArr.length) {
+    throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
   }
-  return url.toString().slice(APPEND_QUERY_PARAMS_BASE.length);
+  // Setup the URL to return
+  let searchParamsStr = '';
+  searchParamArr.forEach((searchParam, i) => {
+    if (strictKeyNames && !(searchParam in valuesObj)) {
+      const message = Errors.StrictKeyName(searchParam);
+      throw new Error(message);
+    }
+    const value = valuesObj[searchParam];
+    if (typeof value === 'object') {
+      searchParamsStr += `&${searchParam}=${JSON.stringify(value)}`;
+    } else {
+      searchParamsStr += `&${searchParam}=${value}`;
+    }
+  });
+  // Return
+  return '?' + searchParamsStr.slice(1);
 }
 
 // ------------------------ Independent Functions -------------------------- //
@@ -184,17 +202,12 @@ function appendQueryParams(urlStr: string, params: PlainDataObject): string {
 /**
  * Initialize the function which setups up the url params
  */
-export function externalSetupInsertUrlParamsFn(
+export function setupExternalFormatURLFn(
   path: string,
   options?: Omit<IOptions, 'prepend'> | undefined,
 ) {
   const strictKeyNames = options?.strictKeyNames ?? true;
-  const regex = options?.regex
-    ? options.regex === true
-      ? DEFAULT_REGEX
-      : options.regex
-    : null;
-  return setupInsertUrlParamsFn(path, strictKeyNames, regex);
+  return setupFormatURLFn(path, strictKeyNames);
 }
 
 /******************************************************************************
