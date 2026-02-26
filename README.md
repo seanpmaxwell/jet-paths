@@ -170,14 +170,14 @@ Paths.Users.FooBar({ name: 'sean' }); // Error: missing key "id"
 
 ---
 
-#### `.insertUrlParams`
+#### `.formatURL`
 
-If you need to insert URL parameters outside of a `jetPaths` object, you can import `insertUrlParams` directly. For efficiency, it returns a formatter function bound to the URL.
+If you need to insert URL parameters outside of a `jetPaths` object, you can import the `formatURL` function directly. For efficiency, it returns a formatter function bound to the URL.
 
 ```ts
-import { insertUrlParams } from 'jet-paths';
+import { formatURL } from 'jet-paths';
 
-const formatPath = insertUrlParams('/foo/:name/bar/:id', {
+const formatPath = formatURL('/foo/:name/bar/:id', {
   strictKeyNames: false,
 });
 

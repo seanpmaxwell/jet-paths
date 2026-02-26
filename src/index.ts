@@ -5,5 +5,5 @@ import jetPaths, { setupExternalFormatURLFn } from './setupPaths.js';
 ******************************************************************************/
 
 export { type PathParams as URLParams } from './types.js';
-export const insertUrlParams = setupExternalFormatURLFn;
+export const formatURL = setupExternalFormatURLFn;
 export default jetPaths;

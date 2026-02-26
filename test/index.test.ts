@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import jetPaths, { insertUrlParams } from '../src';
+import jetPaths, { formatURL } from '../src';
 
 /******************************************************************************
                                Constants
@@ -92,12 +92,12 @@ test('test jetPaths function and baseKey option', () => {
 });
 
 /**
- * Test insertUrlParams functions
+ * Test .formatURL functions
  */
-test('test insertUrlParams function', () => {
-  const insert1 = insertUrlParams('/api/users/:id', { strictKeyNames: false }),
-    insert2 = insertUrlParams('api/post/:name/:id', { strictKeyNames: false }),
-    insert3 = insertUrlParams('/api/post/:name/:id', { strictKeyNames: false });
+test('test .formatURL function', () => {
+  const insert1 = formatURL('/api/users/:id', { strictKeyNames: false }),
+    insert2 = formatURL('api/post/:name/:id', { strictKeyNames: false }),
+    insert3 = formatURL('/api/post/:name/:id', { strictKeyNames: false });
   expect(insert1({ id: 7 })).toStrictEqual('/api/users/7');
   expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('api/post/steve/1');
   expect(insert3()).toStrictEqual('/api/post/foo/foo');
@@ -106,7 +106,7 @@ test('test insertUrlParams function', () => {
 /**
  * Test jetPaths prepending
  */
-test('test insertUrlParams function', () => {
+test('test jetPaths prepending', () => {
   const paths = jetPaths(PATHS_2, {
     prepend: 'localhost:3000',
     strictKeyNames: false,
@@ -123,7 +123,7 @@ test('test insertUrlParams function', () => {
 /**
  * Test more jetPaths prepending
  */
-test('test insertUrlParams function with prepend options', () => {
+test('test more jetPaths prepending', () => {
   const PREPEND: string = 'localhost:3000';
   const paths = jetPaths(PATHS_3, { prepend: PREPEND, strictKeyNames: false });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
@@ -141,7 +141,7 @@ test('test insertUrlParams function with prepend options', () => {
 /**
  * Test error catching
  */
-test.only('test jetPaths function and baseKey option', () => {
+test.only('test error catching', () => {
   const pathsFull = jetPaths(PATHS, { regex: true });
   expect(() =>
     pathsFull.Posts.Other({ id: 5, name: 'john' }),
@@ -161,10 +161,14 @@ test.only('test jetPaths function and baseKey option', () => {
 });
 
 /**
- * Test appendQuery
+ * Test inserting `searchParams`
  */
 test.only('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
+
+  // pick up here start tests
+  const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
+  expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
 });
 
 // pick up here, use these for some regex testing
