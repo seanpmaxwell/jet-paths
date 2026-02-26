@@ -2,9 +2,9 @@ import { BASE_KEY, DEFAULT_REGEX, Errors } from './constants';
 import type {
   ArgObj,
   IOptions,
-  PlainDataObject,
+  PathParams,
   RetVal,
-  URLParams,
+  SearchParams,
 } from './types';
 
 /******************************************************************************
@@ -28,31 +28,9 @@ function setupPaths<
 >(pathObj: T, options?: U): CollapseType<RetVal<T, U>> {
   // Setup baseUrl/keynames
   const baseUrl = options?.prepend ?? '',
-    strictKeyNames = options?.strictKeyNames ?? true,
-    regex = getRegex(options);
+    strictKeyNames = options?.strictKeyNames ?? true;
   // Return
-  return setupPathsHelper(
-    pathObj,
-    baseUrl,
-    strictKeyNames,
-    regex,
-    'root',
-  ) as any;
-}
-
-/**
- * Setup the regulat expression
- */
-function getRegex(options?: IOptions): RegExp | false {
-  if (options?.regex === undefined || options?.regex === true) {
-    return DEFAULT_REGEX;
-  } else if (options?.regex === false) {
-    return false;
-  } else if (options?.regex instanceof RegExp) {
-    return options.regex;
-  } else {
-    return DEFAULT_REGEX;
-  }
+  return setupPathsHelper(pathObj, baseUrl, strictKeyNames, 'root') as any;
 }
 
 /**
@@ -65,7 +43,6 @@ function setupPathsHelper(
   parentObj: Record<string, string | ArgObj>,
   baseUrl: string,
   strictKeyNames: boolean,
-  regex: RegExp | false,
   parentName: string,
 ): Record<string, unknown> {
   // Validate base key
@@ -81,31 +58,20 @@ function setupPathsHelper(
     const pval = parentObj[key];
     if (key !== BASE_KEY && typeof pval === 'string') {
       const fullURL = url + pval;
-      runRegexTest(fullURL, regex);
+      if (!DEFAULT_REGEX.test(fullURL)) {
+        throw new Error(Errors.REGEX);
+      }
       if (fullURL.includes('/:') || fullURL.includes('?')) {
         retVal[key] = setupFormatURLFn(fullURL, strictKeyNames);
       } else {
         retVal[key] = fullURL;
       }
     } else if (typeof pval === 'object') {
-      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, regex, key);
+      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, key);
     }
   }
   // Return
   return retVal;
-}
-
-/**
- * @private
- * @see setupPathsHelper
- *
- * Run regular expression test
- */
-function runRegexTest(fullURL: string, regex: RegExp | false): void {
-  if (regex === false) return;
-  if (!regex.test(fullURL)) {
-    throw new Error(Errors.REGEX);
-  }
 }
 
 /**
@@ -117,7 +83,6 @@ function runRegexTest(fullURL: string, regex: RegExp | false): void {
 function setupFormatURLFn(fullURL: string, strictKeyNames = true) {
   const fullUrlArr = fullURL.split('?').filter(Boolean),
     [pathUrl, searchUrl] = fullUrlArr;
-
   // Get the indexes where a variable exists
   const pathUrlArr = pathUrl.split('/').filter(Boolean),
     pathParamIndexes: number[] = [];
@@ -129,55 +94,39 @@ function setupFormatURLFn(fullURL: string, strictKeyNames = true) {
   });
   // Get a list of the searchParams
   const searchParamArr = searchUrl.split('&').map((pair) => pair.split('=')[0]);
-
-  // pick up here, don't forget to prepent '/' at the very start
-  console.log();
-
+  // Insert `PathParams` and `SearchParams`
   if (pathParamIndexes.length > 0 && searchParamArr.length > 0) {
-    return (pathParams: URLParams, searchParams: PlainDataObject): string => {
-      let finalUrl = insertPathParams(
+    return (pathParams?: PathParams, searchParams?: SearchParams): string => {
+      const finalPathUrl = insertPathParams(
         strictKeyNames,
         pathUrlArr,
         pathParamIndexes,
         pathParams,
       );
-      finalUrl = insertSearchParams(finalUrl);
+      const finalSearchUrl = insertSearchParams(
+        searchParamArr,
+        searchParams,
+        strictKeyNames,
+      );
+      return finalPathUrl + finalSearchUrl;
     };
+    // Insert `PathParams`
   } else if (pathParamIndexes.length > 0) {
+    return (pathParams?: PathParams) =>
+      insertPathParams(
+        strictKeyNames,
+        pathUrlArr,
+        pathParamIndexes,
+        pathParams,
+      );
+    // Insert `SearchParams`
+  } else if (searchParamArr.length > 0) {
+    return (searchParams?: SearchParams) =>
+      insertSearchParams(searchParamArr, searchParams, strictKeyNames);
+    // No `params`
+  } else {
+    return () => fullURL;
   }
-
-  // Return the InsertUrlParams function
-  // return (pathParams?: URLParams) => {
-  //   if (pathParams === undefined) {
-  //     return path;
-  //   }
-  //   const isParamObject = !!pathParams && typeof pathParams === 'object';
-  //   // Check the number of keys
-  //   if (strictKeyNames && isParamObject) {
-  //     if (Object.keys(pathParams).length !== paramIndexes.length) {
-  //       throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
-  //     }
-  //   }
-  //   // Setup the URL to return
-  //   const urlArrClone = [...urlArr];
-  //   paramIndexes.forEach((index) => {
-  //     const key = urlArrClone[index];
-  //     if (isParamObject) {
-  //       if (strictKeyNames && !(key in pathParams)) {
-  //         throw new Error(Errors.StrictKeyName(key));
-  //       }
-  //       urlArrClone[index] = String(pathParams[key]);
-  //     } else if (pathParams !== undefined) {
-  //       urlArrClone[index] = String(pathParams);
-  //     }
-  //   });
-  //   // Check the regex if truthy
-  //   const finalUrl = (path.startsWith('/') ? '/' : '') + urlArrClone.join('/');
-  //   if (!stripQueryAndHash(finalUrl, regex)) {
-  //     throw new Error(Errors.REGEX);
-  //   }
-  //   return finalUrl;
-  // };
 }
 
 /**
@@ -190,38 +139,26 @@ function insertPathParams(
   strictKeyNames: boolean,
   pathUrlArr: string[],
   pathParamIndexes: number[],
-  valuesObj: URLParams,
+  valuesObj?: PathParams,
 ): string {
-  if (valuesObj === undefined) return '';
-  // Check the number of keys
-  const isParamObject = !!valuesObj && typeof valuesObj === 'object';
-  if (strictKeyNames && isParamObject) {
-    if (Object.keys(valuesObj).length !== pathParamIndexes.length) {
-      throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
-    }
+  // Validate
+  if (valuesObj === undefined) {
+    return '';
+  } else if (Object.keys(valuesObj).length !== pathParamIndexes.length) {
+    throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
   }
   // Setup the URL to return
   const urlArrClone = [...pathUrlArr];
   pathParamIndexes.forEach((index) => {
     const key = urlArrClone[index];
-    if (isParamObject) {
-      if (strictKeyNames && !(key in valuesObj)) {
-        throw new Error(Errors.StrictKeyName(key));
-      }
-      urlArrClone[index] = String(valuesObj[key]);
-    } else if (valuesObj !== undefined) {
-      urlArrClone[index] = String(valuesObj);
+    if (strictKeyNames && !(key in valuesObj)) {
+      const message = Errors.StrictKeyName(key);
+      throw new Error(message);
     }
+    urlArrClone[index] = String(valuesObj[key]);
   });
   // Return
-  return urlArrClone.join('/');
-
-  // Check the regex if truthy
-  // const finalUrl = (path.startsWith('/') ? '/' : '') + urlArrClone.join('/');
-  // if (!stripQueryAndHash(finalUrl, regex)) {
-  //   throw new Error(Errors.REGEX);
-  // }
-  // return finalUrl;
+  return '/' + urlArrClone.join('/');
 }
 
 /**
@@ -233,20 +170,31 @@ function insertPathParams(
  */
 function insertSearchParams(
   searchParamArr: string[],
-  valuesObj: PlainDataObject,
+  valuesObj?: SearchParams,
+  strictKeyNames = false,
 ): string {
-  // const url = new URL(urlStr.slice(0, -2), APPEND_QUERY_PARAMS_BASE);
-  // for (const [key, value] of Object.entries(params)) {
-  //   if (value instanceof Date) {
-  //     url.searchParams.append(key, value.toISOString());
-  //   } else if (typeof value === 'object') {
-  //     url.searchParams.append(key, JSON.stringify(value));
-  //   } else {
-  //     url.searchParams.append(key, String(value));
-  //   }
-  // }
-  // return url.toString().slice(APPEND_QUERY_PARAMS_BASE.length);
-  // pick up here, setup the search string
+  // Validate
+  if (valuesObj === undefined) {
+    return '';
+  } else if (Object.keys(valuesObj).length !== searchParamArr.length) {
+    throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
+  }
+  // Setup the URL to return
+  let searchParamsStr = '';
+  searchParamArr.forEach((searchParam, i) => {
+    if (strictKeyNames && !(searchParam in valuesObj)) {
+      const message = Errors.StrictKeyName(searchParam);
+      throw new Error(message);
+    }
+    const value = valuesObj[searchParam];
+    if (typeof value === 'object') {
+      searchParamsStr += `&${searchParam}=${JSON.stringify(value)}`;
+    } else {
+      searchParamsStr += `&${searchParam}=${value}`;
+    }
+  });
+  // Return
+  return '?' + searchParamsStr.slice(1);
 }
 
 // ------------------------ Independent Functions -------------------------- //
@@ -259,12 +207,7 @@ export function setupExternalFormatURLFn(
   options?: Omit<IOptions, 'prepend'> | undefined,
 ) {
   const strictKeyNames = options?.strictKeyNames ?? true;
-  const regex = options?.regex
-    ? options.regex === true
-      ? DEFAULT_REGEX
-      : options.regex
-    : null;
-  return setupFormatURLFn(path, strictKeyNames, regex);
+  return setupFormatURLFn(path, strictKeyNames);
 }
 
 /******************************************************************************

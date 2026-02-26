@@ -98,9 +98,9 @@ test('test insertUrlParams function', () => {
   const insert1 = insertUrlParams('/api/users/:id', { strictKeyNames: false }),
     insert2 = insertUrlParams('api/post/:name/:id', { strictKeyNames: false }),
     insert3 = insertUrlParams('/api/post/:name/:id', { strictKeyNames: false });
-  expect(insert1(7)).toStrictEqual('/api/users/7');
+  expect(insert1({ id: 7 })).toStrictEqual('/api/users/7');
   expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('api/post/steve/1');
-  expect(insert3('foo')).toStrictEqual('/api/post/foo/foo');
+  expect(insert3()).toStrictEqual('/api/post/foo/foo');
 });
 
 /**
@@ -112,7 +112,9 @@ test('test insertUrlParams function', () => {
     strictKeyNames: false,
   });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
-  expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
+  expect(paths.Users.One({ id: 5 })).toStrictEqual(
+    'localhost:3000/api/users/5',
+  );
   expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
     'localhost:3000/api/users/delete/5',
   );
@@ -125,8 +127,12 @@ test('test insertUrlParams function with prepend options', () => {
   const PREPEND: string = 'localhost:3000';
   const paths = jetPaths(PATHS_3, { prepend: PREPEND, strictKeyNames: false });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
-  expect(paths.Users.One(5)).toStrictEqual('localhost:3000/api/users/5');
-  expect(paths.Users.One(null)).toStrictEqual('localhost:3000/api/users/null');
+  expect(paths.Users.One({ id: 5 })).toStrictEqual(
+    'localhost:3000/api/users/5',
+  );
+  expect(paths.Users.One({ id: null })).toStrictEqual(
+    'localhost:3000/api/users/null',
+  );
   expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
     'localhost:3000/api/users/delete/5',
   );

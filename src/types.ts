@@ -5,8 +5,8 @@ import type { BASE_KEY } from './constants';
 ******************************************************************************/
 
 type Primitive = string | number | boolean | null | undefined;
-export type URLParams = Primitive | Record<string, Primitive>;
 
+export type PathParams = Record<string, Primitive>;
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
@@ -28,10 +28,10 @@ export interface IOptions {
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
   ? S extends `${string}?${string}`
-    ? (urlParams: URLParams, queryParams: PlainDataObject) => S
-    : (urlParams: URLParams) => S
+    ? (urlParams?: PathParams, queryParams?: SearchParams) => S
+    : (urlParams?: PathParams) => S
   : S extends `${string}?${string}`
-    ? (queryParams: PlainDataObject) => S
+    ? (queryParams?: SearchParams) => S
     : S;
 
 // Set string or function type
@@ -84,7 +84,12 @@ export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
 
 // ------------------------- Appending Search Params ----------------------- //
 
-type PlainDataArray = (Primitive | Date | PlainDataObject | PlainDataArray)[];
-export type PlainDataObject = {
-  [key: string]: Primitive | Date | PlainDataObject | PlainDataArray;
+type SearchParamsArray = (
+  | Primitive
+  | Date
+  | SearchParams
+  | SearchParamsArray
+)[];
+export type SearchParams = {
+  [key: string]: Primitive | Date | SearchParams | SearchParamsArray;
 };

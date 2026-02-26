@@ -141,15 +141,13 @@ Paths.Users.Delete({ id: 1 });
 
 ## 📥 Passing arguments to URL functions
 
-You may pass an object, a primitive, or no arguments at all when calling a URL function.
+You may pass an object or no arguments at all when calling a URL function.
 
 Key behaviors to note:
 
-- If a primitive is passed and multiple parameters exist, the value replaces **all** parameters.
 - If an object is passed, its keys must match the parameter names in the URL.
 - When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
 - Calling the function with no arguments returns the unformatted URL.
-- `null` may be inserted, but `undefined` must be converted to a string explicitly.
 
 <br/><b>\*\*\*</b><br/>
 
@@ -168,32 +166,6 @@ When enabled, object keys passed to a URL function must exactly match the URL pa
 ```ts
 Paths.Users.FooBar({ id: 5, name: 'sean', age: 4 }); // Error: too many keys
 Paths.Users.FooBar({ name: 'sean' }); // Error: missing key "id"
-```
-
----
-
-#### `regex` (`RegExp` | `boolean`, default: `true`)
-
-Enables regular expression validation every time a URL function is called.
-
-- `true` (default) uses an internal regular expression.
-- Providing a custom `RegExp` overrides the default.
-- Pass `null` if you want to disable regular expression validation
-
-```ts
-const Paths = jetPaths(
-  {
-    _: '/api',
-    Users: {
-      _: '/users',
-      One: '/:id',
-    },
-  },
-  { regex: true },
-);
-
-Paths.Users.One({ id: 5 }); // OK
-Paths.Users.One({ id: '12*&^ %134' }); // Throws validation error
 ```
 
 ---
