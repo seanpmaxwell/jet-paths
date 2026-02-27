@@ -4,10 +4,9 @@
 
 // Misc
 export const BASE_KEY = '_';
-export const REGEX_INCOMING =
-  /^\/(?:[A-Za-z0-9._~-]+|:[A-Za-z][A-Za-z0-9_]*)(?:\/(?:[A-Za-z0-9._~-]+|:[A-Za-z][A-Za-z0-9_]*))*(?:\?[A-Za-z][A-Za-z0-9_]*=\{\}(?:&[A-Za-z][A-Za-z0-9_]*=\{\})*)?$/;
-export const REGEX_FORMATTED =
-  /^\/(?:[A-Za-z0-9._~-]+(?:\/[A-Za-z0-9._~-]+)*)?(?:\?[A-Za-z0-9._~-]+=[^&#\s]*(?:&[A-Za-z0-9._~-]+=[^&#\s]*)*)?$/;
+export const REGEX_PATHNAME = /^\/(?:[^\s\/?#]+\/?)*$/;
+export const REGEX_SEARCH_QUERY =
+  /^\?(?:[A-Za-z0-9._~-]+=(?:[^&#]*)?)(?:&[A-Za-z0-9._~-]+=(?:[^&#]*)?)*/;
 
 // Errors
 export const Errors = {
@@ -17,14 +16,25 @@ export const Errors = {
       key
     );
   },
-  StrictKeyName(key: string) {
+  KeyMissing(key: string) {
+    return `The "${key}" was not present on the value object.`;
+  },
+  ForwardSlash(path: string, parentPath = '') {
     return (
-      `Option :strictKeysNames is set to return true but the "${key}" was ` +
-      'not present on the object.'
+      'All paths must start with a foward-slash "/". Path: ' +
+      `"${path}"${parentPath ? `, Parent path: "${parentPath}".` : '.'}`
     );
   },
-  STRICT_KEY_NAME_LENGTH:
-    'Option :strictKeyNames is set to true but but the number of object ' +
-    'keys did not match the number of URL parameters.',
-  REGEX: 'URL failed regular expression check',
+  KeyNameLength(path: string) {
+    return (
+      'The number of keys on the value object did not match the ' +
+      `number of URL parameters. Path "${path}".`
+    );
+  },
+  RegexPath(path: string) {
+    return 'URL "path" failed regular expression check: ' + path;
+  },
+  RegexSearch(searchStr: string) {
+    return 'URL "search" params failed regular expression check: ' + searchStr;
+  },
 } as const;

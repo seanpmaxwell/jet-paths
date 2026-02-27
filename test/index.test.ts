@@ -80,18 +80,16 @@ const PATHS_5 = {
  */
 test('test jetPaths function and baseKey option', () => {
   // Test the basics
-  const pathsFull = jetPaths(PATHS, { strictKeyNames: false });
+  const pathsFull = jetPaths(PATHS);
   expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
-  expect(pathsFull.Posts.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
+  expect(pathsFull.Posts.Delete({ id: 5 })).toStrictEqual(
     '/api/posts/delete/5',
   );
   expect(pathsFull.Posts._).toStrictEqual('/api/posts');
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/67/something/bar',
   );
-  expect(pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toStrictEqual(
-    '/api/posts/else/34/something/foo',
-  );
+  expect(() => pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toThrowError();
   expect(pathsFull.Posts.Misc()).toStrictEqual(
     '/api/posts/misc/:id/something/:foo',
   );
@@ -101,14 +99,13 @@ test('test jetPaths function and baseKey option', () => {
  * Test .formatURL functions
  */
 test('test .formatURL function', () => {
-  const insert1 = formatURL('/api/users/:id', { strictKeyNames: false }),
-    insert2 = formatURL('/api/post/:name/:id', { strictKeyNames: false }),
-    insert3 = formatURL('/api/post/:name/:id', { strictKeyNames: false });
+  const insert1 = formatURL('/api/users/:id'),
+    insert2 = formatURL('/api/post/:name/:id'),
+    insert3 = formatURL('/api/post/:name/:id');
   expect(insert1({ id: 7 })).toStrictEqual('/api/users/7');
   expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('/api/post/steve/1');
   expect(insert3()).toStrictEqual('/api/post/:name/:id');
-  const resp = () => formatURL('api/post/:name/:id', { strictKeyNames: false });
-  expect(() => resp()).toThrowError();
+  expect(() => formatURL('api/post/:name/:id')).toThrowError();
 });
 
 /**
@@ -117,15 +114,12 @@ test('test .formatURL function', () => {
 test('test jetPaths prepending', () => {
   const paths = jetPaths(PATHS_2, {
     prepend: 'localhost:3000',
-    strictKeyNames: false,
   });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
-  expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
-    'localhost:3000/api/users/delete/5',
-  );
+  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
@@ -133,7 +127,7 @@ test('test jetPaths prepending', () => {
  */
 test('test more jetPaths prepending', () => {
   const PREPEND: string = 'localhost:3000';
-  const paths = jetPaths(PATHS_3, { prepend: PREPEND, strictKeyNames: false });
+  const paths = jetPaths(PATHS_3, { prepend: PREPEND });
   expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
@@ -141,9 +135,10 @@ test('test more jetPaths prepending', () => {
   expect(paths.Users.One({ id: null })).toStrictEqual(
     'localhost:3000/api/users/null',
   );
-  expect(paths.Users.Delete({ id: 5, foo: 'bar' })).toStrictEqual(
+  expect(paths.Users.Delete({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/delete/5',
   );
+  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
@@ -180,6 +175,8 @@ test('appending search params', () => {
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
   expect(() => jetPaths(PATHS_5)).toThrowError();
+
+  // expect(() => formatURL('/api/:search/:foo?')).toThrowError();
 });
 
 // pick up here, make sure legacy stuff still works first

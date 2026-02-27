@@ -33,7 +33,8 @@ Paths.Users._; // "/api/users"
 
 - Automatically sets up full URLs using nested objects, avoiding repeated prefixes.
 - URLs with parameters are automatically converted into functions for easy value insertion.
-- Optional regular expression validation ensures URLs conform to a specific format.
+- URL functions can insert both path parameters and search parameters using objects.
+- Regular expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
 
 <p>
@@ -81,11 +82,12 @@ const Paths = jetPaths({
     Get: '/all',
     One: '/:id',
     FooBar: '/foo/:name/bar/:id',
+    Search: '/search?query={}',
   },
 });
 
-Paths.Users.FooBar({ id: 5, name: 'sean' });
-// "/api/users/foo/sean/bar/5"
+Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5"
+Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
 ```
 
 <br/><b>\*\*\*</b><br/>
@@ -130,7 +132,7 @@ const Paths = jetPaths(
 );
 ```
 
-The object above is formatted into regex-validated, type-safe routes:
+The object above is formatted into type-safe routes:
 
 ```ts
 Paths.Users._; // "/localhost:3000/api/users"
@@ -145,44 +147,33 @@ You may pass an object or no arguments at all when calling a URL function.
 
 Key behaviors to note:
 
-- Keys must match the parameter names in the URL.
-- Regex validation happens before and after values are inserted.
-- When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
+- Keys in the value-object must match the parameter names in the URL.
+- All paths must start with a forward-slash `/`.
+- Regex validation happens after values are inserted.
+- Value objects are optional incase you want to return the original string (i.e. testing)
+  - If value objects are `undefined`, regex validation is skipped.
 - Calling the function with no arguments returns the unformatted URL.
 
 <br/><b>\*\*\*</b><br/>
 
 ## ⚙️ Options
 
-#### `prepend` (`string` | `undefined`, default: `undefined`)
+#### `prepend:` (`string` | `undefined`, default: `undefined`)
 
 Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
 
-> Note: routes in the object are regex validated; however, the prepend is not.
-
----
-
-#### `strictKeyNames` (`boolean`, default: `true`)
-
-When enabled, object keys passed to a URL function must exactly match the URL parameter names—no more, no fewer. Any mismatch will throw an error.
-
-```ts
-Paths.Users.FooBar({ id: 5, name: 'sean', age: 4 }); // Error: too many keys
-Paths.Users.FooBar({ name: 'sean' }); // Error: missing key "id"
-```
+> Note: routes in the object are regex validated; however, the `prepend` value is not.
 
 ---
 
 #### `.formatURL`
 
-If you need to insert URL parameters outside of a `jetPaths` object, you can import the `formatURL` function directly. For efficiency, it returns a formatter function bound to the URL.
+If you need format a URL outside of a `jetPaths` object, you can import the `formatURL` function directly. For efficiency, it returns a formatter function bound to the URL. `formatURL` does not accept an options parameter.
 
 ```ts
 import { formatURL } from 'jet-paths';
 
-const formatPath = formatURL('/foo/:name/bar/:id', {
-  strictKeyNames: false,
-});
+const formatPath = formatURL('/foo/:name/bar/:id');
 
 formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
 ```

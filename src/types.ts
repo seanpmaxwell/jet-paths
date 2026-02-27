@@ -20,7 +20,6 @@ export type ArgObj = {
 
 export interface IOptions {
   prepend?: string;
-  strictKeyNames?: boolean;
 }
 
 // ------------------------------ Setup Prefix ----------------------------- //
