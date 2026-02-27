@@ -68,7 +68,7 @@ const PATHS_4 = {
 // Should throw error
 const PATHS_5 = {
   _: 'api',
-  Users: '/search?',
+  Users: '/search',
 } as const;
 
 /******************************************************************************
@@ -161,6 +161,7 @@ test('test error catching', () => {
   expect(() =>
     pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
   ).toThrowError();
+  expect(() => jetPaths(PATHS_5)).toThrowError();
 });
 
 /**
@@ -168,24 +169,14 @@ test('test error catching', () => {
  */
 test('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
-
-  // pick up here
-
-  // Basic test
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
-  expect(() => jetPaths(PATHS_5)).toThrowError();
-
-  // expect(() => formatURL('/api/:search/:foo?')).toThrowError();
+  expect(() => pathsFull.Users.Search({ name: 'foo' })).toThrowError();
+  expect(() =>
+    pathsFull.Users.Search({ name: 'foo', email: 'bar', id: 5 }),
+  ).toThrowError();
+  expect(() =>
+    pathsFull.Users.Search({ name: 'foo', email: 'bar', id: 5 }),
+  ).toThrowError();
+  // pick up here
 });
-
-// pick up here, make sure legacy stuff still works first
-
-// pick up here, use these for some regex testing
-// regex.test('/api/:search')
-// regex.test('api/:search')
-// regex.test('/api/:search/?')
-// regex.test('/api/:search/:foo?')
-// regex.test('/api/:search/:foo?search={}')
-// regex.test('/api/:search/:foo?search={}name={}')
-// regex.test('/api/:search/:foo?search={}&name={}')
