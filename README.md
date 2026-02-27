@@ -130,7 +130,7 @@ const Paths = jetPaths(
 );
 ```
 
-The object above is formatted into fully qualified, type-safe routes:
+The object above is formatted into regex-validated, type-safe routes:
 
 ```ts
 Paths.Users._; // "/localhost:3000/api/users"
@@ -145,7 +145,8 @@ You may pass an object or no arguments at all when calling a URL function.
 
 Key behaviors to note:
 
-- If an object is passed, its keys must match the parameter names in the URL.
+- Keys must match the parameter names in the URL.
+- Regex validation happens before and after values are inserted.
 - When `strictKeyNames` is `true` (default), extra or missing keys will throw an error.
 - Calling the function with no arguments returns the unformatted URL.
 
@@ -156,6 +157,8 @@ Key behaviors to note:
 #### `prepend` (`string` | `undefined`, default: `undefined`)
 
 Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
+
+> Note: routes in the object are regex validated; however, the prepend is not.
 
 ---
 

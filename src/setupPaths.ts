@@ -1,10 +1,10 @@
-import { BASE_KEY, DEFAULT_REGEX, Errors } from './constants';
+import { BASE_KEY, Errors, REGEX_FORMATTED, REGEX_INCOMING } from './constants';
 import type {
   ArgObj,
   IOptions,
-  PathParams,
+  PathValues,
   RetVal,
-  SearchParams,
+  SearchValues,
 } from './types';
 
 /******************************************************************************
@@ -30,7 +30,7 @@ function setupPaths<
   const baseUrl = options?.prepend ?? '',
     strictKeyNames = options?.strictKeyNames ?? true;
   // Return
-  return setupPathsHelper(pathObj, baseUrl, strictKeyNames, 'root') as any;
+  return setupPathsHelper(pathObj, baseUrl, '', strictKeyNames, 'root') as any;
 }
 
 /**
@@ -42,6 +42,7 @@ function setupPaths<
 function setupPathsHelper(
   parentObj: Record<string, string | ArgObj>,
   baseUrl: string,
+  parentUrl: string,
   strictKeyNames: boolean,
   parentName: string,
 ): Record<string, unknown> {
@@ -50,24 +51,30 @@ function setupPathsHelper(
     throw new Error(Errors.BaseKey(parentName));
   }
   // Init vars
-  const url = baseUrl + parentObj[BASE_KEY],
+  const localBaseUrl = parentUrl + parentObj[BASE_KEY],
     keys = Object.keys(parentObj),
-    retVal: any = { [BASE_KEY]: url };
+    retVal: any = { [BASE_KEY]: localBaseUrl };
   // Iterate keys
   for (const key of keys) {
     const pval = parentObj[key];
     if (key !== BASE_KEY && typeof pval === 'string') {
-      const fullURL = url + pval;
-      if (!DEFAULT_REGEX.test(fullURL)) {
-        throw new Error(Errors.REGEX);
-      }
-      if (fullURL.includes('/:') || fullURL.includes('?')) {
-        retVal[key] = setupFormatURLFn(fullURL, strictKeyNames);
+      const fullUrl = localBaseUrl + pval;
+      if (fullUrl.includes('/:') || fullUrl.includes('?')) {
+        retVal[key] = setupFormatURLFn(baseUrl, fullUrl, strictKeyNames);
       } else {
-        retVal[key] = fullURL;
+        if (!REGEX_FORMATTED.test(fullUrl)) {
+          throw new Error(Errors.REGEX);
+        }
+        retVal[key] = baseUrl + fullUrl;
       }
     } else if (typeof pval === 'object') {
-      retVal[key] = setupPathsHelper(pval, url, strictKeyNames, key);
+      retVal[key] = setupPathsHelper(
+        pval,
+        baseUrl,
+        localBaseUrl,
+        strictKeyNames,
+        key,
+      );
     }
   }
   // Return
@@ -80,8 +87,18 @@ function setupPathsHelper(
  *
  * Initialize the function which setups up the url params
  */
-function setupFormatURLFn(fullURL: string, strictKeyNames = true) {
-  const fullUrlArr = fullURL.split('?').filter(Boolean),
+function setupFormatURLFn(
+  baseUrl: string,
+  fullUrl: string,
+  strictKeyNames = true,
+) {
+  // Test format
+  console.log('horse', fullUrl);
+  if (!REGEX_INCOMING.test(fullUrl)) {
+    throw new Error(Errors.REGEX);
+  }
+  // init
+  const fullUrlArr = fullUrl.split('?').filter(Boolean),
     [pathUrl, searchUrl] = fullUrlArr;
   // Get the indexes where a variable exists
   const pathUrlArr = pathUrl.split('/').filter(Boolean),
@@ -93,40 +110,74 @@ function setupFormatURLFn(fullURL: string, strictKeyNames = true) {
     }
   });
   // Get a list of the searchParams
-  const searchParamArr = searchUrl.split('&').map((pair) => pair.split('=')[0]);
-  // Insert `PathParams` and `SearchParams`
+  const searchParamArr: string[] =
+    searchUrl?.split('&').map((pair) => pair.split('=')[0]) ?? '';
+  // Setup the `getFinalUrl` function
+  const getFinalUrl = configureGetFinalUrlFn(
+    baseUrl,
+    fullUrl,
+    strictKeyNames,
+    pathUrlArr,
+    pathParamIndexes,
+    searchParamArr,
+  );
+  // Return the user facing function
   if (pathParamIndexes.length > 0 && searchParamArr.length > 0) {
-    return (pathParams?: PathParams, searchParams?: SearchParams): string => {
+    return (pathValues?: PathValues, searchValues?: SearchValues): string =>
+      getFinalUrl(pathValues, searchValues);
+  } else if (pathParamIndexes.length > 0) {
+    return (pathValues?: PathValues) => getFinalUrl(pathValues);
+  } else if (searchParamArr.length > 0) {
+    return (searchValues?: SearchValues) =>
+      getFinalUrl(undefined, searchValues);
+  } else {
+    return () => getFinalUrl();
+  }
+}
+
+/**
+ * @private
+ * @see setupFormatURLFn
+ *
+ * Return a function which combines the pathURL and the search-query string.
+ */
+function configureGetFinalUrlFn(
+  baseUrl: string,
+  origUrl: string,
+  strictKeyNames: boolean,
+  pathUrlArr: string[],
+  pathParamIndexes: number[],
+  searchParamArr: string[],
+): (pathValues?: PathValues, searchValues?: SearchValues) => string {
+  return (pathValues?: PathValues, searchValues?: SearchValues): string => {
+    let finalUrl = '';
+    // Insert path values
+    if (pathValues) {
       const finalPathUrl = insertPathParams(
         strictKeyNames,
         pathUrlArr,
         pathParamIndexes,
-        pathParams,
+        pathValues,
       );
+      finalUrl += '/' + finalPathUrl;
+    }
+    // Insert search params
+    if (searchValues) {
       const finalSearchUrl = insertSearchParams(
         searchParamArr,
-        searchParams,
+        searchValues,
         strictKeyNames,
       );
-      return finalPathUrl + finalSearchUrl;
-    };
-    // Insert `PathParams`
-  } else if (pathParamIndexes.length > 0) {
-    return (pathParams?: PathParams) =>
-      insertPathParams(
-        strictKeyNames,
-        pathUrlArr,
-        pathParamIndexes,
-        pathParams,
-      );
-    // Insert `SearchParams`
-  } else if (searchParamArr.length > 0) {
-    return (searchParams?: SearchParams) =>
-      insertSearchParams(searchParamArr, searchParams, strictKeyNames);
-    // No `params`
-  } else {
-    return () => fullURL;
-  }
+      finalUrl += '?' + finalSearchUrl;
+    }
+    // Finish
+    if (!finalUrl) {
+      return baseUrl + origUrl;
+    } else if (!REGEX_FORMATTED.test(finalUrl)) {
+      throw new Error(Errors.REGEX);
+    }
+    return baseUrl + finalUrl;
+  };
 }
 
 /**
@@ -139,26 +190,29 @@ function insertPathParams(
   strictKeyNames: boolean,
   pathUrlArr: string[],
   pathParamIndexes: number[],
-  valuesObj?: PathParams,
+  pathValues?: PathValues,
 ): string {
   // Validate
-  if (valuesObj === undefined) {
+  if (pathValues === undefined) {
     return '';
-  } else if (Object.keys(valuesObj).length !== pathParamIndexes.length) {
+  } else if (
+    strictKeyNames &&
+    Object.keys(pathValues).length !== pathParamIndexes.length
+  ) {
     throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
   }
   // Setup the URL to return
   const urlArrClone = [...pathUrlArr];
   pathParamIndexes.forEach((index) => {
     const key = urlArrClone[index];
-    if (strictKeyNames && !(key in valuesObj)) {
+    if (strictKeyNames && !(key in pathValues)) {
       const message = Errors.StrictKeyName(key);
       throw new Error(message);
     }
-    urlArrClone[index] = String(valuesObj[key]);
+    urlArrClone[index] = String(pathValues[key]);
   });
   // Return
-  return '/' + urlArrClone.join('/');
+  return urlArrClone.join('/');
 }
 
 /**
@@ -170,23 +224,26 @@ function insertPathParams(
  */
 function insertSearchParams(
   searchParamArr: string[],
-  valuesObj?: SearchParams,
+  searchValues?: SearchValues,
   strictKeyNames = false,
 ): string {
   // Validate
-  if (valuesObj === undefined) {
+  if (searchValues === undefined) {
     return '';
-  } else if (Object.keys(valuesObj).length !== searchParamArr.length) {
+  } else if (
+    strictKeyNames &&
+    Object.keys(searchValues).length !== searchParamArr.length
+  ) {
     throw new Error(Errors.STRICT_KEY_NAME_LENGTH);
   }
   // Setup the URL to return
   let searchParamsStr = '';
   searchParamArr.forEach((searchParam, i) => {
-    if (strictKeyNames && !(searchParam in valuesObj)) {
+    if (strictKeyNames && !(searchParam in searchValues)) {
       const message = Errors.StrictKeyName(searchParam);
       throw new Error(message);
     }
-    const value = valuesObj[searchParam];
+    const value = searchValues[searchParam];
     if (typeof value === 'object') {
       searchParamsStr += `&${searchParam}=${JSON.stringify(value)}`;
     } else {
@@ -194,7 +251,7 @@ function insertSearchParams(
     }
   });
   // Return
-  return '?' + searchParamsStr.slice(1);
+  return searchParamsStr.slice(1);
 }
 
 // ------------------------ Independent Functions -------------------------- //
@@ -207,7 +264,7 @@ export function setupExternalFormatURLFn(
   options?: Omit<IOptions, 'prepend'> | undefined,
 ) {
   const strictKeyNames = options?.strictKeyNames ?? true;
-  return setupFormatURLFn(path, strictKeyNames);
+  return setupFormatURLFn('', path, strictKeyNames);
 }
 
 /******************************************************************************

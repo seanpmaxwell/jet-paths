@@ -65,6 +65,12 @@ const PATHS_4 = {
   },
 } as const;
 
+// Should throw error
+const PATHS_5 = {
+  _: 'api',
+  Users: '/search?',
+} as const;
+
 /******************************************************************************
                                Functions
 ******************************************************************************/
@@ -96,11 +102,13 @@ test('test jetPaths function and baseKey option', () => {
  */
 test('test .formatURL function', () => {
   const insert1 = formatURL('/api/users/:id', { strictKeyNames: false }),
-    insert2 = formatURL('api/post/:name/:id', { strictKeyNames: false }),
+    insert2 = formatURL('/api/post/:name/:id', { strictKeyNames: false }),
     insert3 = formatURL('/api/post/:name/:id', { strictKeyNames: false });
   expect(insert1({ id: 7 })).toStrictEqual('/api/users/7');
-  expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('api/post/steve/1');
-  expect(insert3()).toStrictEqual('/api/post/foo/foo');
+  expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('/api/post/steve/1');
+  expect(insert3()).toStrictEqual('/api/post/:name/:id');
+  const resp = () => formatURL('api/post/:name/:id', { strictKeyNames: false });
+  expect(() => resp()).toThrowError();
 });
 
 /**
@@ -141,8 +149,8 @@ test('test more jetPaths prepending', () => {
 /**
  * Test error catching
  */
-test.only('test error catching', () => {
-  const pathsFull = jetPaths(PATHS, { regex: true });
+test('test error catching', () => {
+  const pathsFull = jetPaths(PATHS);
   expect(() =>
     pathsFull.Posts.Other({ id: 5, name: 'john' }),
   ).not.toThrowError();
@@ -154,21 +162,24 @@ test.only('test error catching', () => {
     pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
   ).toThrowError();
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
-  const pathsCustomRegex = jetPaths(PATHS, { regex: /^.*$/s });
+  const pathsCustomRegex = jetPaths(PATHS);
   expect(() =>
     pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).not.toThrowError();
+  ).toThrowError();
 });
 
 /**
  * Test inserting `searchParams`
  */
-test.skip('appending search params', () => {
+test('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
+
+  // pick up here
 
   // Basic test
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
+  expect(() => jetPaths(PATHS_5)).toThrowError();
 });
 
 // pick up here, make sure legacy stuff still works first

@@ -6,7 +6,7 @@ import type { BASE_KEY } from './constants';
 
 type Primitive = string | number | boolean | null | undefined;
 
-export type PathParams = Record<string, Primitive>;
+export type PathValues = Record<string, Primitive>;
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
@@ -21,17 +21,16 @@ export type ArgObj = {
 export interface IOptions {
   prepend?: string;
   strictKeyNames?: boolean;
-  regex?: RegExp | boolean;
 }
 
 // ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
   ? S extends `${string}?${string}`
-    ? (urlParams?: PathParams, queryParams?: SearchParams) => S
-    : (urlParams?: PathParams) => S
+    ? (urlParams?: PathValues, queryParams?: SearchValues) => S
+    : (urlParams?: PathValues) => S
   : S extends `${string}?${string}`
-    ? (queryParams?: SearchParams) => S
+    ? (queryParams?: SearchValues) => S
     : S;
 
 // Set string or function type
@@ -84,12 +83,13 @@ export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
 
 // ------------------------- Appending Search Params ----------------------- //
 
-type SearchParamsArray = (
+type SearchValuesArray = (
   | Primitive
   | Date
-  | SearchParams
-  | SearchParamsArray
+  | SearchValues
+  | SearchValuesArray
 )[];
-export type SearchParams = {
-  [key: string]: Primitive | Date | SearchParams | SearchParamsArray;
+
+export type SearchValues = {
+  [key: string]: Primitive | Date | SearchValues | SearchValuesArray;
 };
