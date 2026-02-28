@@ -1,11 +1,5 @@
 import { BASE_KEY, Errors, REGEX } from './constants.js';
-import type {
-  ArgObj,
-  IOptions,
-  PathValues,
-  RetVal,
-  SearchValues,
-} from './types.js';
+import type { ArgObj, Dict, IOptions, RetVal } from './types.js';
 
 /******************************************************************************
                                    Types
@@ -87,7 +81,7 @@ function setupFormatURLFn(
     pathVarCount = segmentArr.filter((p) => p.startsWith(':')).length;
   // Return function to insert pathValues
   if (pathVarCount > 0) {
-    return (pathValues?: PathValues, searchValues?: SearchValues): string => {
+    return (pathValues?: object, searchValues?: object): string => {
       let finalUrl = insertPathParams(
         fullUrl,
         segmentArr,
@@ -103,7 +97,7 @@ function setupFormatURLFn(
     };
     // Return function only insert search values
   } else {
-    return (searchValues?: SearchValues): string => {
+    return (searchValues?: object): string => {
       let finalUrl = fullUrl + setupSearchParams(searchValues);
       finalUrl = finalUrl || fullUrl;
       if (!disableRegex && !!finalUrl && !REGEX.test(finalUrl)) {
@@ -124,7 +118,7 @@ function insertPathParams(
   fullUrl: string,
   segmentArr: string[],
   pathUrlVarCount: number,
-  pathValues?: PathValues,
+  pathValues?: object,
 ): string {
   // Validate
   if (pathValues === undefined) {
@@ -141,7 +135,7 @@ function insertPathParams(
         const message = Errors.KeyMissing(key);
         throw new Error(message);
       }
-      retVal += '/' + String(pathValues[key]);
+      retVal += '/' + String((pathValues as Dict)[key]);
     } else {
       retVal += '/' + segment;
     }
@@ -157,7 +151,7 @@ function insertPathParams(
  * Append query params from an object to an existing URL string. Works with
  * absolute URLs and relative URLs in Node.js 24.
  */
-function setupSearchParams(searchValues?: SearchValues): string {
+function setupSearchParams(searchValues?: object): string {
   // Validate
   if (searchValues === undefined) {
     return '';
@@ -165,8 +159,8 @@ function setupSearchParams(searchValues?: SearchValues): string {
   // Setup the URL to return
   let retVal = '';
   for (const searchParam in searchValues) {
-    const value = searchValues[searchParam];
-    if (typeof value === 'object') {
+    const value = (searchValues as Dict)[searchParam];
+    if (!!value && typeof value === 'object') {
       retVal += `&${searchParam}=${JSON.stringify(value)}`;
     } else {
       retVal += `&${searchParam}=${value}`;

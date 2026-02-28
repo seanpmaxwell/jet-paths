@@ -8,7 +8,7 @@
 
 > A type-safe utility for defining, composing, and formatting URL paths using nested objects.
 
-Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path-params and query-params easily and consistently.
+Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path parameters and append search parameters easily and consistently.
 
 At a glance:
 
@@ -23,7 +23,7 @@ const Paths = jetPaths({
 });
 
 Paths.Users.Get(); // "/api/users/all"
-Paths.Users.One(5); // "/api/users/5"
+Paths.Users.One({ id: 5 }); // "/api/users/5"
 Paths.Users._(); // "/api/users"
 ```
 
@@ -31,20 +31,12 @@ Paths.Users._(); // "/api/users"
 
 ## 🤔 Why jet-paths?
 
-- Automatically sets up full URLs using nested objects, avoiding repeated prefixes.
-- URLs with parameters are automatically converted into functions for easy value insertion.
-- URL functions can insert both path parameters and search parameters using objects.
+- Automatically sets up functions to return full URLs using nested objects, avoiding repeated prefixes.
+- All paths are converted to functions which allow append search parameters with an object.
+- URLs with path variables (i.e `/:name`) have an additional function argument to insert variables.
 - Regular expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
 
-<p align="center">
-  <img
-    src="./assets/vscode-1.png"
-    alt="vscode-1"
-    width=700"
-    style="width: 75%; max-width: 700px; height: auto;"
-  />
-</p>
 ---
 
 ### Keep your routes organized
@@ -80,11 +72,11 @@ const Paths = jetPaths({
     Get: '/all',
     One: '/:id',
     FooBar: '/foo/:name/bar/:id',
-    Search: '/search?query={}',
+    Search: '/search',
   },
 });
 
-Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5"
+Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5" - order doesn't matter
 Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
 ```
 
@@ -141,16 +133,16 @@ Paths.Users.Delete({ id: 1 });
 
 ## 📥 Passing arguments to URL functions
 
-You may pass an object or no arguments at all when calling a URL function.
+You may pass an object/s or no arguments at all when calling a URL function.
 
 Key behaviors to note:
 
-- Keys in the value-object for path segments must match.
+- Keys in the value-object for path variables must match.
 - All paths must start with a forward-slash `/`.
-- Regex validation happens after values are inserted (exluding the `prepend` value)
-- Value objects are optional incase you want to return the original string (i.e. testing)
+- Regex validation happens after values are inserted/appended (exluding the `prepend` value)
+- Value objects are optional in case you want to return the original string (i.e. testing)
   - If value objects are `undefined`, regex validation is skipped.
-- Calling the function with no arguments returns the unformatted URL.
+  - Calling the function with no arguments returns the unformatted URL.
 
 <br/><b>\*\*\*</b><br/>
 

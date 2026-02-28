@@ -4,9 +4,8 @@ import type { BASE_KEY } from './constants.js';
                                    Types
 ******************************************************************************/
 
-type Primitive = string | number | boolean | null | undefined;
+export type Dict = Record<string, unknown>;
 
-export type PathValues = Record<string, Primitive>;
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
@@ -26,8 +25,8 @@ export interface IOptions {
 // ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
-  ? (pathParams?: PathValues, searchParams?: SearchValues) => S
-  : (searchParams?: SearchValues) => S;
+  ? (pathParams?: object, searchParams?: object) => S
+  : (searchParams?: object) => S;
 
 // Set string or function type
 type Iterate<T extends object> = {
@@ -76,16 +75,3 @@ type SetupPrefix<
 export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
   ExpandPaths<T, SetupPrefix<T, U>>
 >;
-
-// ------------------------- Appending Search Params ----------------------- //
-
-type SearchValuesArray = (
-  | Primitive
-  | Date
-  | SearchValues
-  | SearchValuesArray
-)[];
-
-export type SearchValues = {
-  [key: string]: Primitive | Date | SearchValues | SearchValuesArray;
-};
