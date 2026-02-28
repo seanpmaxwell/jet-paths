@@ -154,3 +154,17 @@ test('appending search params', () => {
   const url = pathsFull.Users.Search({ name: 'foo', ids: [1, 2, 3] });
   expect(url).toStrictEqual('/api/users/search?name=foo&ids=[1,2,3]');
 });
+
+const Paths = jetPaths(
+  {
+    _: '/api',
+    Users: {
+      _: '/users',
+      Add: '/add',
+      Delete: '/delete/:id',
+    },
+  },
+  { prepend: 'localhost:3000' },
+);
+
+Paths.Users.Add();

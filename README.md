@@ -40,13 +40,6 @@ Paths.Users._(); // "/api/users"
 <p>
   <img src="./assets/vscode-1.png" alt="vscode-1" />
 </p>
-
-- Functions are fully type-safe too ;)
-
-<p>
-  <img src="./assets/vscode-2.png" alt="vscode-2" />
-</p>
-
 ---
 
 ### Keep your routes organized
