@@ -37,8 +37,8 @@ Paths.Users._(); // "/api/users"
 - Regular expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
 
-<p>
-  <img src="./assets/vscode-1.png" alt="vscode-1" />
+<p align="center">
+  <img src="./assets/vscode-1.png" alt="vscode-1" width="900" />
 </p>
 ---
 
