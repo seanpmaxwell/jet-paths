@@ -22,9 +22,9 @@ const Paths = jetPaths({
   },
 });
 
-Paths.Users.Get; // "/api/users/all"
+Paths.Users.Get(); // "/api/users/all"
 Paths.Users.One(5); // "/api/users/5"
-Paths.Users._; // "/api/users"
+Paths.Users._(); // "/api/users"
 ```
 
 <br/><b>\*\*\*</b><br/>
@@ -135,7 +135,7 @@ const Paths = jetPaths(
 The object above is formatted into type-safe routes:
 
 ```ts
-Paths.Users._; // "/localhost:3000/api/users"
+Paths.Users._(); // "/localhost:3000/api/users"
 Paths.Users.Delete({ id: 1 });
 ```
 
@@ -147,9 +147,9 @@ You may pass an object or no arguments at all when calling a URL function.
 
 Key behaviors to note:
 
-- Keys in the value-object must match the parameter names in the URL.
+- Keys in the value-object for path segments must match.
 - All paths must start with a forward-slash `/`.
-- Regex validation happens after values are inserted.
+- Regex validation happens after values are inserted (exluding the `prepend` value)
 - Value objects are optional incase you want to return the original string (i.e. testing)
   - If value objects are `undefined`, regex validation is skipped.
 - Calling the function with no arguments returns the unformatted URL.
@@ -167,14 +167,6 @@ Prepends a string to the beginning of every route. While this can also be achiev
 #### `disableRegex:` (`boolean` | `undefined`, default: `false`)
 
 Disables regular-expression check at the end of each function call.
-
-```ts
-import { formatURL } from 'jet-paths';
-
-const formatPath = formatURL('/foo/:name/bar/:id');
-
-formatPath({ id: 5, name: 'sean' }); // "/foo/sean/bar/5"
-```
 
 <br/><b>\*\*\*</b><br/>
 

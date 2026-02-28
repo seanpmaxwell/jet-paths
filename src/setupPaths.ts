@@ -26,8 +26,9 @@ function setupPaths<
   const T extends ArgObj,
   const U extends IOptions | undefined,
 >(pathObj: T, options?: U): CollapseType<RetVal<T, U>> {
-  const baseUrl = options?.prepend ?? '';
-  return setupPathsHelper(pathObj, baseUrl, '', 'root') as any;
+  const prepend = options?.prepend ?? '',
+    disableRegex = !!options?.disableRegex;
+  return setupPathsHelper(pathObj, prepend, '', 'root', disableRegex) as any;
 }
 
 /**
@@ -38,9 +39,10 @@ function setupPaths<
  */
 function setupPathsHelper(
   parentObj: Record<string, string | ArgObj>,
-  baseUrl: string,
+  prepend: string,
   parentUrl: string,
   parentName: string,
+  disableRegex: boolean,
 ): Record<string, unknown> {
   // Validate base key
   if (typeof parentObj[BASE_KEY] !== 'string') {
@@ -55,9 +57,15 @@ function setupPathsHelper(
     const pathItem = parentObj[key];
     if (typeof pathItem === 'string' && key !== BASE_KEY) {
       const fullUrl = localBaseUrl + pathItem;
-      retVal[key] = setupFormatURLFn(baseUrl, fullUrl);
+      retVal[key] = setupFormatURLFn(prepend, fullUrl, disableRegex);
     } else if (typeof pathItem === 'object') {
-      retVal[key] = setupPathsHelper(pathItem, baseUrl, localBaseUrl, key);
+      retVal[key] = setupPathsHelper(
+        pathItem,
+        prepend,
+        localBaseUrl,
+        key,
+        disableRegex,
+      );
     }
   }
   // Return
@@ -70,7 +78,11 @@ function setupPathsHelper(
  *
  * Initialize the function which setups up the url params
  */
-function setupFormatURLFn(baseUrl: string, fullUrl: string) {
+function setupFormatURLFn(
+  prepend: string,
+  fullUrl: string,
+  disableRegex: boolean,
+) {
   const segmentArr = fullUrl.split('/').filter(Boolean),
     pathVarCount = segmentArr.filter((p) => p.startsWith(':')).length;
   // Return function to insert pathValues
@@ -84,20 +96,20 @@ function setupFormatURLFn(baseUrl: string, fullUrl: string) {
       );
       finalUrl += setupSearchParams(searchValues);
       finalUrl = finalUrl || fullUrl;
-      if (!!finalUrl && !REGEX.test(finalUrl)) {
+      if (!disableRegex && !!finalUrl && !REGEX.test(finalUrl)) {
         throw new Error(Errors.Regex(finalUrl));
       }
-      return baseUrl + finalUrl;
+      return prepend + finalUrl;
     };
     // Return function only insert search values
   } else {
     return (searchValues?: SearchValues): string => {
       let finalUrl = fullUrl + setupSearchParams(searchValues);
       finalUrl = finalUrl || fullUrl;
-      if (!!finalUrl && !REGEX.test(finalUrl)) {
+      if (!disableRegex && !!finalUrl && !REGEX.test(finalUrl)) {
         throw new Error(Errors.Regex(finalUrl));
       }
-      return baseUrl + finalUrl;
+      return prepend + finalUrl;
     };
   }
 }

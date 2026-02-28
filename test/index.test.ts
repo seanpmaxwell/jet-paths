@@ -138,16 +138,16 @@ test('test error catching', () => {
     pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
   ).toThrowError();
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
-  const pathsCustomRegex = jetPaths(PATHS);
-  expect(() =>
-    pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).toThrowError();
+  const pathsDisableRegex = jetPaths(PATHS, { disableRegex: true });
+  expect(
+    pathsDisableRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
+  ).toStrictEqual('/api/posts/other/5/blah/bar 62 23*(&^');
 });
 
 /**
  * Test inserting `searchParams`
  */
-test.only('appending search params', () => {
+test('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');

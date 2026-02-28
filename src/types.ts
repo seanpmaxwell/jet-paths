@@ -20,7 +20,7 @@ export type ArgObj = {
 
 export interface IOptions {
   prepend?: string;
-  disableRegex?: string;
+  disableRegex?: boolean;
 }
 
 // ------------------------------ Setup Prefix ----------------------------- //
