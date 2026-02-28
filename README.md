@@ -38,7 +38,12 @@ Paths.Users._(); // "/api/users"
 - **TypeScript-first** and fully type-safe.
 
 <p align="center">
-  <img src="./assets/vscode-1.png" alt="vscode-1" width="900" />
+  <img
+    src="./assets/vscode-1.png"
+    alt="vscode-1"
+    width=700"
+    style="width: 75%; max-width: 700px; height: auto;"
+  />
 </p>
 ---
 
