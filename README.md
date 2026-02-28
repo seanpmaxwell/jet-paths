@@ -164,11 +164,9 @@ Prepends a string to the beginning of every route. While this can also be achiev
 
 > Note: routes in the object are regex validated; however, the `prepend` value is not.
 
----
+#### `disableRegex:` (`boolean` | `undefined`, default: `false`)
 
-#### `.formatURL`
-
-If you need format a URL outside of a `jetPaths` object, you can import the `formatURL` function directly. For efficiency, it returns a formatter function bound to the URL. `formatURL` does not accept an options parameter.
+Disables regular-expression check at the end of each function call.
 
 ```ts
 import { formatURL } from 'jet-paths';

@@ -20,17 +20,14 @@ export type ArgObj = {
 
 export interface IOptions {
   prepend?: string;
+  disableRegex?: string;
 }
 
 // ------------------------------ Setup Prefix ----------------------------- //
 
 type ResolveType<S extends string> = S extends `${string}/:${string}`
-  ? S extends `${string}?${string}`
-    ? (urlParams?: PathValues, queryParams?: SearchValues) => S
-    : (urlParams?: PathValues) => S
-  : S extends `${string}?${string}`
-    ? (queryParams?: SearchValues) => S
-    : S;
+  ? (pathParams?: PathValues, searchParams?: SearchValues) => S
+  : (searchParams?: SearchValues) => S;
 
 // Set string or function type
 type Iterate<T extends object> = {

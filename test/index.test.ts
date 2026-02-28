@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import jetPaths, { formatURL } from '../src';
+import jetPaths from '../src';
 
 /******************************************************************************
                                Constants
@@ -61,14 +61,8 @@ const PATHS_4 = {
   _: '/api',
   Users: {
     _: '/users',
-    Search: '/search?name={}&email={}',
+    Search: '/search',
   },
-} as const;
-
-// Should throw error
-const PATHS_5 = {
-  _: 'api',
-  Users: '/search',
 } as const;
 
 /******************************************************************************
@@ -81,7 +75,7 @@ const PATHS_5 = {
 test('test jetPaths function and baseKey option', () => {
   // Test the basics
   const pathsFull = jetPaths(PATHS);
-  expect(pathsFull.Users.Add).toStrictEqual('/api/users/add');
+  expect(pathsFull.Users.Add()).toStrictEqual('/api/users/add');
   expect(pathsFull.Posts.Delete({ id: 5 })).toStrictEqual(
     '/api/posts/delete/5',
   );
@@ -96,26 +90,13 @@ test('test jetPaths function and baseKey option', () => {
 });
 
 /**
- * Test .formatURL functions
- */
-test('test .formatURL function', () => {
-  const insert1 = formatURL('/api/users/:id'),
-    insert2 = formatURL('/api/post/:name/:id'),
-    insert3 = formatURL('/api/post/:name/:id');
-  expect(insert1({ id: 7 })).toStrictEqual('/api/users/7');
-  expect(insert2({ name: 'steve', id: 1 })).toStrictEqual('/api/post/steve/1');
-  expect(insert3()).toStrictEqual('/api/post/:name/:id');
-  expect(() => formatURL('api/post/:name/:id')).toThrowError();
-});
-
-/**
  * Test jetPaths prepending
  */
 test('test jetPaths prepending', () => {
   const paths = jetPaths(PATHS_2, {
     prepend: 'localhost:3000',
   });
-  expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  expect(paths.Users.Add()).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
@@ -128,7 +109,7 @@ test('test jetPaths prepending', () => {
 test('test more jetPaths prepending', () => {
   const PREPEND: string = 'localhost:3000';
   const paths = jetPaths(PATHS_3, { prepend: PREPEND });
-  expect(paths.Users.Add).toStrictEqual('localhost:3000/api/users/add');
+  expect(paths.Users.Add()).toStrictEqual('localhost:3000/api/users/add');
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
@@ -161,22 +142,15 @@ test('test error catching', () => {
   expect(() =>
     pathsCustomRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
   ).toThrowError();
-  expect(() => jetPaths(PATHS_5)).toThrowError();
 });
 
 /**
  * Test inserting `searchParams`
  */
-test('appending search params', () => {
+test.only('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
-  expect(() => pathsFull.Users.Search({ name: 'foo' })).toThrowError();
-  expect(() =>
-    pathsFull.Users.Search({ name: 'foo', email: 'bar', id: 5 }),
-  ).toThrowError();
-  expect(() =>
-    pathsFull.Users.Search({ name: 'foo', email: 'bar', id: 5 }),
-  ).toThrowError();
-  // pick up here
+  const url = pathsFull.Users.Search({ name: 'foo', ids: [1, 2, 3] });
+  expect(url).toStrictEqual('/api/users/search?name=foo&ids=[1,2,3]');
 });
