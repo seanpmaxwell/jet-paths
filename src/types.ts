@@ -1,4 +1,4 @@
-import type { BASE_KEY } from './constants';
+import type { BASE_KEY } from './constants.js';
 
 /******************************************************************************
                                    Types

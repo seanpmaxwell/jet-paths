@@ -1,11 +1,11 @@
-import { BASE_KEY, Errors, REGEX } from './constants';
+import { BASE_KEY, Errors, REGEX } from './constants.js';
 import type {
   ArgObj,
   IOptions,
   PathValues,
   RetVal,
   SearchValues,
-} from './types';
+} from './types.js';
 
 /******************************************************************************
                                    Types
