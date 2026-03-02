@@ -60,7 +60,7 @@ const BASE_USERS = `${BASE}/users`;
 
 ---
 
-### Insert path paramters
+### Insert path paramters and append search parameters
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 
@@ -73,11 +73,13 @@ const Paths = jetPaths({
     One: '/:id',
     FooBar: '/foo/:name/bar/:id',
     Search: '/search',
+    Other: '/other/:name/blah',
   },
 });
 
 Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5" - order doesn't matter
 Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
+Paths.Users.Other({ name: 'joe' }, { ids: [1,2,3] }); // "/api/users/other/joe/blah?ids=[1,2,3]"
 ```
 
 <br/><b>\*\*\*</b><br/>
