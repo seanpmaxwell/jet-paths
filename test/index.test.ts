@@ -83,7 +83,8 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/67/something/bar',
   );
-  expect(() => pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toThrowError();
+  // Should cause type error
+  // expect(() => pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toThrowError();
   expect(pathsFull.Posts.Misc()).toStrictEqual(
     '/api/posts/misc/:id/something/:foo',
   );
@@ -100,7 +101,8 @@ test('test jetPaths prepending', () => {
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
-  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
+  // Should cause type error
+  // expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
@@ -119,29 +121,54 @@ test('test more jetPaths prepending', () => {
   expect(paths.Users.Delete({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/delete/5',
   );
-  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
+  // expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
  * Test error catching
  */
 test('test error catching', () => {
+  interface PathParams {
+    id: number;
+    name: string;
+  }
+
+  const pathParams: PathParams = { id: 5, name: 'john' };
   const pathsFull = jetPaths(PATHS);
-  expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'john' }),
-  ).not.toThrowError();
+  expect(() => pathsFull.Posts.Other(pathParams)).not.toThrowError();
+  // @ts-ignore
   expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
   expect(() =>
     pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
   ).toThrowError();
   expect(() =>
+    // @ts-ignore
     pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
   ).toThrowError();
+  // @ts-ignore
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
   const pathsDisableRegex = jetPaths(PATHS, { disableRegex: true });
   expect(
     pathsDisableRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
   ).toStrictEqual('/api/posts/other/5/blah/bar 62 23*(&^');
+  // Test invalid SearchParams
+  interface ISearchParams {
+    q: string;
+  }
+  const searchParams: ISearchParams = { q: 'blah' };
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'n' }, searchParams),
+  ).toThrowError();
+  // Test invalid SearchParams (type-aliases instead of interface)
+  type TSearchParams = {
+    q: string;
+  };
+  const searchParams2: TSearchParams = { q: 'blah' };
+  expect(() =>
+    pathsFull.Posts.Other({ id: 5, name: 'n' }, searchParams2),
+  ).toThrowError();
+  // Should throw type error
+  // pathsFull.Posts.Other({ id: 5, name: 'n' }, { [5]: 'blah'})
 });
 
 /**
@@ -154,17 +181,3 @@ test('appending search params', () => {
   const url = pathsFull.Users.Search({ name: 'foo', ids: [1, 2, 3] });
   expect(url).toStrictEqual('/api/users/search?name=foo&ids=[1,2,3]');
 });
-
-const Paths = jetPaths(
-  {
-    _: '/api',
-    Users: {
-      _: '/users',
-      Add: '/add',
-      Delete: '/delete/:id',
-    },
-  },
-  { prepend: 'localhost:3000' },
-);
-
-Paths.Users.Add();

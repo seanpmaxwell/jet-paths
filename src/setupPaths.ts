@@ -89,8 +89,7 @@ function setupFormatURLFn(
         pathValues,
       );
       finalUrl += setupSearchParams(searchValues);
-      finalUrl = finalUrl || fullUrl;
-      if (!disableRegex && !!finalUrl && !REGEX.test(finalUrl)) {
+      if (!disableRegex && !!pathValues && !REGEX.test(finalUrl)) {
         throw new Error(Errors.Regex(finalUrl));
       }
       return prepend + finalUrl;
@@ -98,9 +97,8 @@ function setupFormatURLFn(
     // Return function only insert search values
   } else {
     return (searchValues?: object): string => {
-      let finalUrl = fullUrl + setupSearchParams(searchValues);
-      finalUrl = finalUrl || fullUrl;
-      if (!disableRegex && !!finalUrl && !REGEX.test(finalUrl)) {
+      const finalUrl = fullUrl + setupSearchParams(searchValues);
+      if (!disableRegex && !REGEX.test(finalUrl)) {
         throw new Error(Errors.Regex(finalUrl));
       }
       return prepend + finalUrl;
