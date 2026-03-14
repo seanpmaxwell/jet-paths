@@ -88,6 +88,14 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Misc()).toStrictEqual(
     '/api/posts/misc/:id/something/:foo',
   );
+  // Test SearchParams
+  interface ISearchParams {
+    q: string;
+  }
+  const searchParams: ISearchParams = { q: 'blah' };
+  expect(
+    pathsFull.Posts.Other({ id: 5, name: 'n' }, searchParams),
+  ).toStrictEqual('/api/posts/other/5/blah/n?q=blah');
 });
 
 /**
@@ -152,20 +160,14 @@ test('test error catching', () => {
     pathsDisableRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
   ).toStrictEqual('/api/posts/other/5/blah/bar 62 23*(&^');
   // Test invalid SearchParams
-  interface ISearchParams {
-    q: string;
-  }
-  const searchParams: ISearchParams = { q: 'blah' };
   expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'n' }, searchParams),
+    pathsFull.Posts.Other({ id: 5, name: 'n' }, { 55: 'bar 62 23*(&^' } as any),
   ).toThrowError();
   // Test invalid SearchParams (type-aliases instead of interface)
-  type TSearchParams = {
-    q: string;
-  };
-  const searchParams2: TSearchParams = { q: 'blah' };
   expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'n' }, searchParams2),
+    pathsFull.Posts.Other({ id: 5, name: 'n' }, {
+      q: { woof: 'bar 62 23*(&^' },
+    } as any),
   ).toThrowError();
   // Should throw type error
   // pathsFull.Posts.Other({ id: 5, name: 'n' }, { [5]: 'blah'})
@@ -176,8 +178,10 @@ test('test error catching', () => {
  */
 test('appending search params', () => {
   const pathsFull = jetPaths(PATHS_4);
+  // Basic test
   const formattedURL = pathsFull.Users.Search({ name: 'foo', email: 'bar' });
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
+  // Test id
   const url = pathsFull.Users.Search({ name: 'foo', ids: [1, 2, 3] });
   expect(url).toStrictEqual('/api/users/search?name=foo&ids=[1,2,3]');
 });
