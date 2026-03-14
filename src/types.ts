@@ -4,8 +4,8 @@ import type { BASE_KEY } from './constants.js';
                                    Types
 ******************************************************************************/
 
+type Primitive = string | number | boolean | null | undefined;
 export type Dict = Record<string, unknown>;
-
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
@@ -22,13 +22,38 @@ export interface IOptions {
   disableRegex?: boolean;
 }
 
-// ------------------------------ Setup Prefix ----------------------------- //
+// ------------------------------ Setup Object ----------------------------- //
 
-type ResolveType<S extends string> = S extends `${string}/:${string}`
-  ? (pathParams?: object, searchParams?: object) => S
-  : (searchParams?: object) => S;
+type SearchParams<T extends object> =
+  Exclude<keyof T, string> extends never
+    ? T extends { [K in keyof T]: Primitive | Primitive[] }
+      ? T
+      : never
+    : never;
 
-// Set string or function type
+// -- Setup the PathParams object -- //
+
+type ParamNames<Path extends string> =
+  Path extends `${string}/:${infer Param}/${infer Rest}`
+    ? Param | ParamNames<`/${Rest}`>
+    : Path extends `${string}/:${infer Param}`
+      ? Param
+      : never;
+
+type PathParams<Path extends string> = {
+  [K in ParamNames<Path>]: Primitive;
+};
+
+// -- Get the type of url params object -- //
+
+type ResolveType<
+  S extends string,
+  P = CollapseType<PathParams<S>>,
+> = S extends `${string}/:${string}`
+  ? <T extends object>(pathParams?: P, searchParams?: SearchParams<T>) => S
+  : <T extends object>(searchParams?: SearchParams<T>) => S;
+
+// Set different functions
 type Iterate<T extends object> = {
   [K in keyof T]: T[K] extends string
     ? ResolveType<T[K]>

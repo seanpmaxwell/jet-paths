@@ -27,14 +27,16 @@ Paths.Users.One({ id: 5 }); // "/api/users/5"
 Paths.Users._(); // "/api/users"
 ```
 
-<br/><b>\*\*\*</b><br/>
+<br/><b>\*\*\*\*</b><br/>
 
 ## 🤔 Why jet-paths?
 
 - Automatically sets up functions to return full URLs using nested objects, avoiding repeated prefixes.
-- All paths are converted to functions which allow append search parameters with an object.
-- URLs with path variables (i.e `/:name`) have an additional function argument to insert variables.
-- Regular expression validation ensures URLs conform to a specific format.
+- All paths are converted to functions which enable appending search-parameters with an object.
+- URLs with path-variables (i.e `/:name`) have an additional function-argument to insert values.
+- Function-argument to insert path-variables is an object type-literal, whose keys match path-variable names.
+  - Path-variable object is validated using both at runtime and compile time.
+- Regular-expression validation ensures URLs conform to a specific format.
 - **TypeScript-first** and fully type-safe.
 
 ---
@@ -82,7 +84,7 @@ Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
 Paths.Users.Other({ name: 'joe' }, { ids: [1,2,3] }); // "/api/users/other/joe/blah?ids=[1,2,3]"
 ```
 
-<br/><b>\*\*\*</b><br/>
+<br/><b>\*\*\*\*</b><br/>
 
 ## ⚡ Quick Start
 
@@ -131,22 +133,23 @@ Paths.Users._(); // "/localhost:3000/api/users"
 Paths.Users.Delete({ id: 1 });
 ```
 
-<br/><b>\*\*\*</b><br/>
+<br/><b>\*\*\*\*</b><br/>
 
-## 📥 Passing arguments to URL functions
+## 📥 Key behaviors to note
 
-You may pass an object/s or no arguments at all when calling a URL function.
-
-Key behaviors to note:
-
-- Keys in the value-object for path variables must match.
+- You may pass an object/s or no arguments at all when calling a URL function.
+- Keys in the function-argument object for path-variables must match path-variable names.
+  - i.e, if the path is `/api/users/:id` object must be `{ id: 5 }`.
 - All paths must start with a forward-slash `/`.
-- Regex validation happens after values are inserted/appended (exluding the `prepend` value)
-- Value objects are optional in case you want to return the original string (i.e. testing)
-  - If value objects are `undefined`, regex validation is skipped.
+- A values for path-parameters must be a primitive type: i.e. `string | number | boolean | undefined | null`.
+- A values for search-parameters must be a primitive type or an array of primitives.
+  - If you want to pass an object (other than arrays) to a search parameter, you must stringify it first.
+- Regex validation happens after values are inserted/appended (exluding the `prepend` value).
+- Function parameters are optional in case you want to return the original string (i.e. testing)
+  - If there are path-variables and the path-variables argument is `undefined`, regex validation is skipped.
   - Calling the function with no arguments returns the unformatted URL.
 
-<br/><b>\*\*\*</b><br/>
+<br/><b>\*\*\*\*</b><br/>
 
 ## ⚙️ Options
 
@@ -160,7 +163,7 @@ Prepends a string to the beginning of every route. While this can also be achiev
 
 Disables regular-expression check at the end of each function call.
 
-<br/><b>\*\*\*</b><br/>
+<br/><b>\*\*\*\*</b><br/>
 
 ## 📄 License
 
