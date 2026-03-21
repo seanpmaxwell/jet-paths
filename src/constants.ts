@@ -5,7 +5,7 @@
 // Misc
 export const BASE_KEY = '_';
 export const REGEX =
-  /^\/(?:[A-Za-z0-9]+|:[A-Za-z0-9]+)(?:\/(?:[A-Za-z0-9]+|:[A-Za-z0-9]+))*\/?(?:\?(?:[A-Za-z0-9]+=[^&#]*)(?:&[A-Za-z0-9]+=[^&#]*)*)?$/;
+  /^\/(?:[A-Za-z0-9]+|-\d+|:[A-Za-z0-9]+)(?:\/(?:[A-Za-z0-9]+|-\d+|:[A-Za-z0-9]+))*\/?(?:\?(?:[A-Za-z0-9]+=[^&#]*)(?:&[A-Za-z0-9]+=[^&#]*)*)?$/;
 
 // Errors
 export const Errors = {

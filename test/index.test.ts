@@ -79,9 +79,15 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Delete({ id: 5 })).toStrictEqual(
     '/api/posts/delete/5',
   );
+  expect(pathsFull.Posts.Delete({ id: -5 })).toStrictEqual(
+    '/api/posts/delete/-5',
+  );
   expect(pathsFull.Posts._).toStrictEqual('/api/posts');
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/67/something/bar',
+  );
+  expect(pathsFull.Posts.Misc({ id: -67, foo: 'bar' })).toStrictEqual(
+    '/api/posts/misc/-67/something/bar',
   );
   // Should cause type error
   // expect(() => pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toThrowError();
@@ -171,6 +177,7 @@ test('test error catching', () => {
   ).toThrowError();
   // Should throw type error
   // pathsFull.Posts.Other({ id: 5, name: 'n' }, { [5]: 'blah'})
+  expect(() => pathsFull.Posts.Misc({ id: '- 67', foo: 'bar' })).toThrowError();
 });
 
 /**
