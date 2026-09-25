@@ -1,30 +1,32 @@
-import { BASE_KEY, Errors, REGEX } from './constants.js';
-import type { ArgObj, Dict, IOptions, RetVal } from './types.js';
+import { BASE_KEY, Errors, REGEX } from './constants/misc';
+import type { ArgObj as ArgumentObject, Dict, IOptions } from './types/misc.js';
+import type { ResolvePathsObject } from './types/ResolvePathsObject.js';
 
-/******************************************************************************
-                                  Functions
-******************************************************************************/
+// ========================================================================= //
+//                                 FUNCTIONS                                 //
+// ========================================================================= //
 
 /**
  * Format path object.
  */
 function setupPaths<
-  const T extends ArgObj,
+  const T extends ArgumentObject,
   const U extends IOptions | undefined,
->(pathObj: T, options?: U): RetVal<T, U> {
+>(pathObj: T, options?: U): ResolvePathsObject<T, U> {
   const prepend = options?.prepend ?? '',
     disableRegex = !!options?.disableRegex;
   return setupPathsHelper(pathObj, prepend, '', 'root', disableRegex) as any;
 }
 
 /**
- * @private
- * @see setupPaths
- *
  * The recursive function.
+ *
+ * Used by: {@link setupPaths}
+ *
+ * @private
  */
 function setupPathsHelper(
-  parentObj: Record<string, string | ArgObj>,
+  parentObj: Record<string, string | ArgumentObject>,
   prepend: string,
   parentUrl: string,
   parentName: string,
@@ -64,11 +66,12 @@ function setupPathsHelper(
 }
 
 /**
- * @private
- * @see setupPathsHelper
- *
  * Use "defineProperty" so keys which collide with built-in function
  * properties (i.e. "name", "length") can still be set.
+ *
+ * Used by: {@link setupPathsHelper}
+ *
+ * @private
  */
 function addProperty(target: object, key: string, value: unknown): void {
   Object.defineProperty(target, key, {
@@ -80,11 +83,12 @@ function addProperty(target: object, key: string, value: unknown): void {
 }
 
 /**
- * @private
- * @see setupPathsHelper
- *
  * Initialize the function which returns the full url. The function also has
  * a "_" property which is the original unformatted partial path.
+ *
+ * Used by: {@link setupPathsHelper}
+ *
+ * @private
  */
 function setupFormatURLFn(
   prepend: string,
@@ -98,10 +102,11 @@ function setupFormatURLFn(
 }
 
 /**
- * @private
- * @see setupFormatURLFn
- *
  * Create the function which returns the full url.
+ *
+ * Used by: {@link setupFormatURLFn}
+ *
+ * @private
  */
 function setupFormatURLFnHelper(
   prepend: string,
@@ -138,10 +143,11 @@ function setupFormatURLFnHelper(
 }
 
 /**
- * @private
- * @see setupPathsHelper
- *
  * Initialize the function which setups up the url params
+ *
+ * Used by: {@link setupPathsHelper}
+ *
+ * @private
  */
 function insertPathParams(
   fullUrl: string,
@@ -174,11 +180,12 @@ function insertPathParams(
 }
 
 /**
- * @private
- * @see setupPathsHelper
- *
  * Append query params from an object to an existing URL string. Works with
  * absolute URLs and relative URLs in Node.js 24.
+ *
+ * Used by: {@link setupPathsHelper}
+ *
+ * @private
  */
 function setupSearchParams(searchValues?: object): string {
   // Validate
@@ -199,8 +206,8 @@ function setupSearchParams(searchValues?: object): string {
   return !!retVal ? '?' + retVal.slice(1) : '';
 }
 
-/******************************************************************************
-                                  Export
-******************************************************************************/
+// ========================================================================= //
+//                                  EXPORT                                   //
+// ========================================================================= //
 
 export default setupPaths;

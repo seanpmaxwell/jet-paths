@@ -1,50 +1,17 @@
-import type { BASE_KEY } from './constants.js';
+import type { BASE_KEY } from '../constants/misc';
+import type { ArgObj, IOptions, PathParams, SearchParams } from './misc';
 
-/******************************************************************************
-                                   Types
-******************************************************************************/
+// ========================================================================= //
+//                                   TYPES                                   //
+// ========================================================================= //
 
-type Primitive = string | number | boolean | null | undefined;
-export type Dict = Record<string, unknown>;
 type BaseKey = typeof BASE_KEY;
 
 type CollapseType<T> = {
   -readonly [K in keyof T]: T[K];
 } & {};
 
-export type ArgObj = {
-  _: string;
-  [key: string]: string | ArgObj;
-};
-
-export interface IOptions {
-  prepend?: string;
-  disableRegex?: boolean;
-}
-
-// ------------------------------ Setup Object ----------------------------- //
-
-type SearchParams<T extends object> =
-  Exclude<keyof T, string> extends never
-    ? T extends { [K in keyof T]: Primitive | Primitive[] }
-      ? T
-      : never
-    : never;
-
-// -- Setup the PathParams object -- //
-
-type ParamNames<Path extends string> =
-  Path extends `${string}/:${infer Param}/${infer Rest}`
-    ? Param | ParamNames<`/${Rest}`>
-    : Path extends `${string}/:${infer Param}`
-      ? Param
-      : never;
-
-type PathParams<Path extends string> = {
-  [K in ParamNames<Path>]: Primitive;
-};
-
-// -- Get the type of url params object -- //
+// ============================== `SetupNode` ============================== //
 
 type ResolveType<
   S extends string,
@@ -77,7 +44,7 @@ type SetupNode<T extends ArgObj, Full extends string> = PathFn<
       : never;
 };
 
-// -- SetupPrefix -- //
+// ============================= `SetupPrefix` ============================= //
 
 type SetupPrefix<
   T extends ArgObj,
@@ -90,9 +57,9 @@ type SetupPrefix<
       : T[BaseKey]
     : never;
 
-// -- RetVal -- //
+// ========================== `ResolvePathsObject` ========================= //
 
-export type RetVal<
+export type ResolvePathsObject<
   T extends ArgObj,
   U extends IOptions | undefined,
 > = SetupNode<T, SetupPrefix<T, U>>;

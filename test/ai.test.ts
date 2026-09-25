@@ -2,6 +2,10 @@ import { describe, expect, test } from 'vitest';
 
 import jetPaths from '../src';
 
+// ========================================================================= //
+//                                   TESTS                                   //
+// ========================================================================= //
+
 describe('jetPaths edge cases', () => {
   test('builds nested base paths and static routes', () => {
     const paths = jetPaths({
@@ -63,12 +67,12 @@ describe('jetPaths edge cases', () => {
       Two: '/:id/:slug',
     });
 
-    expect(() => paths.Two({ id: 1 })).toThrowError(
+    expect(() => paths.Two({ id: 1 } as any)).toThrowError(
       /number of keys on the value object/i,
     );
-    expect(() => paths.Two({ id: 1, slug: 'a', extra: 'x' })).toThrowError(
-      /number of keys on the value object/i,
-    );
+    expect(() =>
+      paths.Two({ id: 1, slug: 'a', extra: 'x' } as any),
+    ).toThrowError(/number of keys on the value object/i);
   });
 
   test('throws when a required path key is missing', () => {
@@ -77,7 +81,7 @@ describe('jetPaths edge cases', () => {
       Two: '/:id/:slug',
     });
 
-    expect(() => paths.Two({ id: 1, name: 'abc' })).toThrowError(
+    expect(() => paths.Two({ id: 1, name: 'abc' } as any)).toThrowError(
       /"slug" was not present/,
     );
   });
@@ -98,7 +102,7 @@ describe('jetPaths edge cases', () => {
       when: date,
       none: undefined,
       n: null,
-    });
+    } as any);
 
     expect(url).toBe(
       '/api/search?q=foo&page=2&active=false&tags=["a",1]&meta={"role":"admin"}&when="2024-01-02T03:04:05.000Z"&none=undefined&n=null',
@@ -145,7 +149,9 @@ describe('jetPaths edge cases', () => {
       { disableRegex: true },
     );
 
-    expect(paths.Users.One({ id: 'bad value*&' })).toBe('/api/users/bad value*&');
+    expect(paths.Users.One({ id: 'bad value*&' })).toBe(
+      '/api/users/bad value*&',
+    );
     expect(paths.Search({ bad_key: 'x' })).toBe('/api/search?bad_key=x');
   });
 
@@ -171,35 +177,32 @@ describe('jetPaths edge cases', () => {
   });
 
   test('throws when nested base key is missing or invalid', () => {
-    expect(
-      () =>
-        jetPaths({
-          _: '/api',
-          Users: {
-            Add: '/add',
-          },
-        } as any),
+    expect(() =>
+      jetPaths({
+        _: '/api',
+        Users: {
+          Add: '/add',
+        },
+      } as any),
     ).toThrowError(/base key must exist/i);
 
-    expect(
-      () =>
-        jetPaths({
-          _: '/api',
-          Users: {
-            _: 123,
-            Add: '/add',
-          },
-        } as any),
+    expect(() =>
+      jetPaths({
+        _: '/api',
+        Users: {
+          _: 123,
+          Add: '/add',
+        },
+      } as any),
     ).toThrowError(/base key must exist/i);
   });
 
   test('throws when nested non-object route values recurse into invalid shapes', () => {
-    expect(
-      () =>
-        jetPaths({
-          _: '/api',
-          Bad: [],
-        } as any),
+    expect(() =>
+      jetPaths({
+        _: '/api',
+        Bad: [],
+      } as any),
     ).toThrowError(/base key must exist/i);
   });
 
@@ -247,9 +250,7 @@ describe('jetPaths edge cases', () => {
       },
     });
 
-    expect(paths.User({ userId: 7 }, { page: 2 })).toBe(
-      '/api/users/7?page=2',
-    );
+    expect(paths.User({ userId: 7 }, { page: 2 })).toBe('/api/users/7?page=2');
     expect(paths.User.Posts({ userId: 7 })).toBe('/api/users/7/posts');
   });
 
