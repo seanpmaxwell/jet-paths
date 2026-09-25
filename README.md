@@ -6,11 +6,11 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/jet-paths?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-paths)
 [![License](https://img.shields.io/npm/l/jet-paths.svg)](LICENSE)
 
-> A type-safe utility for defining, composing, and formatting URL paths using nested objects.
-
 Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path parameters and append search parameters easily and consistently.
 
-At a glance:
+<p align="center">· · ·</p>
+
+## 👀 At a glance
 
 ```ts
 const Paths = jetPaths({
@@ -22,12 +22,14 @@ const Paths = jetPaths({
   },
 });
 
-Paths.Users.Get(); // "/api/users/all"
-Paths.Users.One({ id: 5 }); // "/api/users/5"
-Paths.Users._(); // "/api/users"
+Paths.Users.Get(); // '/api/users/all'
+Paths.Users.One({ id: 5 }); // '/api/users/5'
+Paths.Users.One._; // '/:id'
+Paths.Users(); // '/api/users'
+Paths.Users._; // '/users'
 ```
 
-<br/><b>\*\*\*\*</b><br/>
+<p align="center">· · ·</p>
 
 ## 🤔 Why jet-paths?
 
@@ -81,10 +83,10 @@ const Paths = jetPaths({
 
 Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5" - order doesn't matter
 Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
-Paths.Users.Other({ name: 'joe' }, { ids: [1,2,3] }); // "/api/users/other/joe/blah?ids=[1,2,3]"
+Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe/blah?ids=[1,2,3]"
 ```
 
-<br/><b>\*\*\*\*</b><br/>
+<p align="center">· · ·</p>
 
 ## ⚡ Quick Start
 
@@ -133,7 +135,7 @@ Paths.Users._(); // "/localhost:3000/api/users"
 Paths.Users.Delete({ id: 1 });
 ```
 
-<br/><b>\*\*\*\*</b><br/>
+<p align="center">· · ·</p>
 
 ## 📥 Key behaviors to note
 
@@ -149,7 +151,7 @@ Paths.Users.Delete({ id: 1 });
   - If there are path-variables and the path-variables argument is `undefined`, regex validation is skipped.
   - Calling the function with no arguments returns the unformatted URL.
 
-<br/><b>\*\*\*\*</b><br/>
+<p align="center">· · ·</p>
 
 ## ⚙️ Options
 
@@ -163,11 +165,10 @@ Prepends a string to the beginning of every route. While this can also be achiev
 
 Disables regular-expression check at the end of each function call.
 
-<br/><b>\*\*\*\*</b><br/>
+<p align="center">· · ·</p>
 
 ## 📄 License
 
 MIT © [seanpmaxwell1](LICENSE)
-<br/>
 
 Happy web deving! 🚀
