@@ -23,10 +23,10 @@ const Paths = jetPaths({
 });
 
 Paths.Users.Get(); // '/api/users/all'
-Paths.Users.One({ id: 5 }); // '/api/users/5'
-Paths.Users.One._; // '/:id'
 Paths.Users(); // '/api/users'
 Paths.Users._; // '/users'
+Paths.Users.One({ id: 5 }); // '/api/users/5'
+Paths.Users.One._; // '/:id'
 ```
 
 <p align="center">· · ·</p>
@@ -34,7 +34,8 @@ Paths.Users._; // '/users'
 ## 🤔 Why jet-paths?
 
 - Automatically sets up functions to return full URLs using nested objects, avoiding repeated prefixes.
-- All paths are converted to functions which enable appending search-parameters with an object.
+- Every key (including nested objects) is converted to a function which returns the full URL and enables appending search-parameters with an object.
+- Every function has a `._` property which is the original unformatted partial path.
 - URLs with path-variables (i.e `/:name`) have an additional function-argument to insert values.
 - Function-argument to insert path-variables is an object type-literal, whose keys match path-variable names.
   - Path-variable object is validated using both at runtime and compile time.
@@ -131,7 +132,8 @@ const Paths = jetPaths(
 The object above is formatted into type-safe routes:
 
 ```ts
-Paths.Users._(); // "/localhost:3000/api/users"
+Paths.Users(); // "localhost:3000/api/users"
+Paths.Users._; // "/users"
 Paths.Users.Delete({ id: 1 });
 ```
 
@@ -143,6 +145,8 @@ Paths.Users.Delete({ id: 1 });
 - Keys in the function-argument object for path-variables must match path-variable names.
   - i.e, if the path is `/api/users/:id` object must be `{ id: 5 }`.
 - All paths must start with a forward-slash `/`.
+- Nested objects are functions too: calling one returns its full base URL (i.e. `Paths.Users()`), and its child routes are properties on it.
+- The `._` property is always the partial path from the original object, not the full URL (i.e. `Paths.Users.One._` is `'/:id'`).
 - A values for path-parameters must be a primitive type: i.e. `string | number | boolean | undefined | null`.
 - A values for search-parameters must be a primitive type or an array of primitives.
   - If you want to pass an object (other than arrays) to a search parameter, you must stringify it first.

@@ -35,5 +35,14 @@
   "javascript.suggest.completeJSDocs": false,
   "javascript.suggest.jsdoc.generateReturns": false,
   "typescript.suggest.completeJSDocs": false,
-  "typescript.suggest.jsdoc.generateReturns": false
+  "typescript.suggest.jsdoc.generateReturns": false,
+
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.(css|js|jsx|ts|tsx)$",
+        "cmd": "npx code-divider"
+      }
+    ]
+  }
 }

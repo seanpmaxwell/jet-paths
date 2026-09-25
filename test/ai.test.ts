@@ -17,9 +17,9 @@ describe('jetPaths edge cases', () => {
       Health: '/health',
     });
 
-    expect(paths._).toBe('/api');
-    expect(paths.V1._).toBe('/api/v1');
-    expect(paths.V1.Users._).toBe('/api/v1/users');
+    expect(paths()).toBe('/api');
+    expect(paths.V1()).toBe('/api/v1');
+    expect(paths.V1.Users()).toBe('/api/v1/users');
     expect(paths.Health()).toBe('/api/health');
     expect(paths.V1.Users.One({ id: 42 })).toBe('/api/v1/users/42');
     expect(paths.V1.Users.Settings({ tab: 'profile' })).toBe(
@@ -215,5 +215,56 @@ describe('jetPaths edge cases', () => {
     expect(paths.Users.Add({ role: 'admin', page: 2 })).toBe(
       '/api/users/add?role=admin&page=2',
     );
+  });
+
+  test('every function has "_" set to the original partial path', () => {
+    const paths = jetPaths(
+      {
+        _: '/api',
+        Users: {
+          _: '/users',
+          Get: '/all',
+          One: '/:id',
+        },
+      },
+      { prepend: 'localhost:3000' },
+    );
+
+    expect(paths._).toBe('/api');
+    expect(paths.Users._).toBe('/users');
+    expect(paths.Users.Get._).toBe('/all');
+    expect(paths.Users.One._).toBe('/:id');
+    expect(paths.Users()).toBe('localhost:3000/api/users');
+    expect(paths.Users.One({ id: 5 })).toBe('localhost:3000/api/users/5');
+  });
+
+  test('group functions accept path params and search params', () => {
+    const paths = jetPaths({
+      _: '/api',
+      User: {
+        _: '/users/:userId',
+        Posts: '/posts',
+      },
+    });
+
+    expect(paths.User({ userId: 7 }, { page: 2 })).toBe(
+      '/api/users/7?page=2',
+    );
+    expect(paths.User.Posts({ userId: 7 })).toBe('/api/users/7/posts');
+  });
+
+  test('allows keys which collide with built-in function properties', () => {
+    const paths = jetPaths({
+      _: '/api',
+      name: '/name',
+      length: {
+        _: '/length',
+        Get: '/all',
+      },
+    });
+
+    expect(paths.name()).toBe('/api/name');
+    expect(paths.length()).toBe('/api/length');
+    expect(paths.length.Get()).toBe('/api/length/all');
   });
 });

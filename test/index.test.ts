@@ -82,7 +82,8 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Delete({ id: -5 })).toStrictEqual(
     '/api/posts/delete/-5',
   );
-  expect(pathsFull.Posts._).toStrictEqual('/api/posts');
+  expect(pathsFull.Posts()).toStrictEqual('/api/posts');
+  expect(pathsFull.Posts._).toStrictEqual('/posts');
   expect(pathsFull.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/67/something/bar',
   );

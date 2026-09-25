@@ -2,14 +2,6 @@ import { BASE_KEY, Errors, REGEX } from './constants.js';
 import type { ArgObj, Dict, IOptions, RetVal } from './types.js';
 
 /******************************************************************************
-                                   Types
-******************************************************************************/
-
-type CollapseType<T> = {
-  -readonly [K in keyof T]: T[K];
-} & {};
-
-/******************************************************************************
                                   Functions
 ******************************************************************************/
 
@@ -19,7 +11,7 @@ type CollapseType<T> = {
 function setupPaths<
   const T extends ArgObj,
   const U extends IOptions | undefined,
->(pathObj: T, options?: U): CollapseType<RetVal<T, U>> {
+>(pathObj: T, options?: U): RetVal<T, U> {
   const prepend = options?.prepend ?? '',
     disableRegex = !!options?.disableRegex;
   return setupPathsHelper(pathObj, prepend, '', 'root', disableRegex) as any;
@@ -39,26 +31,31 @@ function setupPathsHelper(
   disableRegex: boolean,
 ): Record<string, unknown> {
   // Validate base key
-  if (typeof parentObj[BASE_KEY] !== 'string') {
+  const baseUrl = parentObj[BASE_KEY];
+  if (typeof baseUrl !== 'string') {
     throw new Error(Errors.BaseKey(parentName));
   }
   // Init vars
-  const localBaseUrl = parentUrl + parentObj[BASE_KEY],
+  const localBaseUrl = parentUrl + baseUrl,
     keys = Object.keys(parentObj),
-    retVal: any = { [BASE_KEY]: localBaseUrl };
+    retVal = setupFormatURLFn(prepend, localBaseUrl, baseUrl, disableRegex);
   // Iterate keys
   for (const key of keys) {
     const pathItem = parentObj[key];
-    if (typeof pathItem === 'string' && key !== BASE_KEY) {
+    if (key === BASE_KEY) {
+      continue;
+    } else if (typeof pathItem === 'string') {
       const fullUrl = localBaseUrl + pathItem;
-      retVal[key] = setupFormatURLFn(prepend, fullUrl, disableRegex);
-    } else if (typeof pathItem === 'object') {
-      retVal[key] = setupPathsHelper(
-        pathItem,
-        prepend,
-        localBaseUrl,
+      addProperty(
+        retVal,
         key,
-        disableRegex,
+        setupFormatURLFn(prepend, fullUrl, pathItem, disableRegex),
+      );
+    } else if (typeof pathItem === 'object') {
+      addProperty(
+        retVal,
+        key,
+        setupPathsHelper(pathItem, prepend, localBaseUrl, key, disableRegex),
       );
     }
   }
@@ -70,9 +67,43 @@ function setupPathsHelper(
  * @private
  * @see setupPathsHelper
  *
- * Initialize the function which setups up the url params
+ * Use "defineProperty" so keys which collide with built-in function
+ * properties (i.e. "name", "length") can still be set.
+ */
+function addProperty(target: object, key: string, value: unknown): void {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    writable: false,
+    configurable: false,
+  });
+}
+
+/**
+ * @private
+ * @see setupPathsHelper
+ *
+ * Initialize the function which returns the full url. The function also has
+ * a "_" property which is the original unformatted partial path.
  */
 function setupFormatURLFn(
+  prepend: string,
+  fullUrl: string,
+  partialUrl: string,
+  disableRegex: boolean,
+): Record<string, unknown> {
+  const retVal = setupFormatURLFnHelper(prepend, fullUrl, disableRegex);
+  addProperty(retVal, BASE_KEY, partialUrl);
+  return retVal as unknown as Record<string, unknown>;
+}
+
+/**
+ * @private
+ * @see setupFormatURLFn
+ *
+ * Create the function which returns the full url.
+ */
+function setupFormatURLFnHelper(
   prepend: string,
   fullUrl: string,
   disableRegex: boolean,

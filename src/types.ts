@@ -53,17 +53,6 @@ type ResolveType<
   ? <T extends object>(pathParams?: P, searchParams?: SearchParams<T>) => S
   : <T extends object>(searchParams?: SearchParams<T>) => S;
 
-// Set different functions
-type Iterate<T extends object> = {
-  [K in keyof T]: T[K] extends string
-    ? ResolveType<T[K]>
-    : T[K] extends object
-      ? CollapseType<Iterate<T[K]>>
-      : never;
-};
-
-// -- ExpandPaths -- //
-
 // Joins two path segments, handling slashes cleanly.
 type Join<A extends string, B extends string> = A extends ''
   ? B
@@ -71,14 +60,20 @@ type Join<A extends string, B extends string> = A extends ''
     ? A
     : `${A}${B}`;
 
-// Recursively prefix all string paths in an object
-type ExpandPaths<T extends ArgObj, Prefix extends string> = {
-  [K in keyof T]: T[K] extends string
-    ? K extends '_'
-      ? Prefix
-      : Join<Prefix, T[K]>
+// A function which returns the full url, with the original partial url on "_"
+type PathFn<Full extends string, Part extends string> = ResolveType<Full> & {
+  readonly _: Part;
+};
+
+// Recursively setup a function for every key, prefixing the full url
+type SetupNode<T extends ArgObj, Full extends string> = PathFn<
+  Full,
+  T[BaseKey]
+> & {
+  readonly [K in keyof T as K extends BaseKey ? never : K]: T[K] extends string
+    ? PathFn<Join<Full, T[K]>, T[K]>
     : T[K] extends ArgObj
-      ? ExpandPaths<T[K], Join<Prefix, T[K][BaseKey]>>
+      ? SetupNode<T[K], Join<Full, T[K][BaseKey]>>
       : never;
 };
 
@@ -97,6 +92,7 @@ type SetupPrefix<
 
 // -- RetVal -- //
 
-export type RetVal<T extends ArgObj, U extends IOptions | undefined> = Iterate<
-  ExpandPaths<T, SetupPrefix<T, U>>
->;
+export type RetVal<
+  T extends ArgObj,
+  U extends IOptions | undefined,
+> = SetupNode<T, SetupPrefix<T, U>>;
