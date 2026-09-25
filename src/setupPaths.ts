@@ -54,11 +54,11 @@ function setupNode(
 ): PathFunction {
   // Validate
   if (!isPlainObject(node)) {
-    throw new Error(Errors.RouteValue(formatKeyPath(keyPath)));
+    throw Errors.RouteValue(formatKeyPath(keyPath));
   }
   const baseUrl = node[BASE_KEY];
   if (typeof baseUrl !== 'string') {
-    throw new Error(Errors.BaseKey(formatKeyPath(keyPath)));
+    throw Errors.BaseKey(formatKeyPath(keyPath));
   }
   // Init vars
   const localBaseUrl = parentUrl + baseUrl,
@@ -141,11 +141,11 @@ function validateTemplate(
   );
   // Only base keys may be empty, everything else must start with a "/"
   if (!isBaseKey && !partialUrl.startsWith('/')) {
-    throw new Error(Errors.Template(errorKeyPath, partialUrl));
+    throw Errors.Template(errorKeyPath, partialUrl);
   } else if (!TEMPLATE_REGEX.test(partialUrl)) {
-    throw new Error(Errors.Template(errorKeyPath, partialUrl));
+    throw Errors.Template(errorKeyPath, partialUrl);
   } else if (!TEMPLATE_REGEX.test(fullUrl)) {
-    throw new Error(Errors.Template(errorKeyPath, fullUrl));
+    throw Errors.Template(errorKeyPath, fullUrl);
   }
 }
 
@@ -166,13 +166,13 @@ function insertPathParams(
   if (pathValues === undefined) {
     return fullUrl;
   } else if (typeof pathValues !== 'object' || pathValues === null) {
-    throw new Error(Errors.PathParamsType(fullUrl));
+    throw Errors.PathParamsType(fullUrl);
   } else if (paramNames.length !== Object.keys(pathValues).length) {
-    throw new Error(Errors.KeyNameLength(fullUrl));
+    throw Errors.KeyNameLength(fullUrl);
   }
   for (const name of paramNames) {
     if (!Object.hasOwn(pathValues, name)) {
-      throw new Error(Errors.KeyMissing(name));
+      throw Errors.KeyMissing(name);
     }
   }
   // Replace params in place so the rest of the url is left untouched
@@ -193,11 +193,11 @@ function insertPathParams(
  */
 function encodePathValue(key: string, value: unknown): string {
   if (!isPrimitive(value)) {
-    throw new Error(Errors.PathValue(key));
+    throw Errors.PathValue(key);
   }
   const str = String(value);
   if (str === '' || str === '.' || str === '..') {
-    throw new Error(Errors.PathValue(key));
+    throw Errors.PathValue(key);
   }
   return encodeURIComponent(str);
 }
@@ -215,7 +215,7 @@ function setupSearchParams(searchValues: unknown): string {
   if (searchValues === undefined) {
     return '';
   } else if (typeof searchValues !== 'object' || searchValues === null) {
-    throw new Error(Errors.SearchParamsType());
+    throw Errors.SearchParamsType();
   }
   // Setup the query string
   const parts: string[] = [];
@@ -225,7 +225,7 @@ function setupSearchParams(searchValues: unknown): string {
       if (item === undefined) {
         continue;
       } else if (!isPrimitive(item)) {
-        throw new Error(Errors.SearchValue(key));
+        throw Errors.SearchValue(key);
       }
       parts.push(
         `${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`,

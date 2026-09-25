@@ -8,8 +8,6 @@
 
 Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path parameters and append search parameters easily and consistently.
 
-<p align="center">· · ·</p>
-
 ## 👀 At a glance
 
 ```ts
@@ -33,19 +31,16 @@ Paths.Users.One._; // '/:id'
 
 ## 🤔 Why jet-paths?
 
-- Automatically sets up functions to return full URLs using nested objects, avoiding repeated prefixes.
-- Every key (including nested objects) is converted to a function which returns the full URL and enables appending search-parameters with an object.
-- Every function has a `._` property which is the original unformatted partial path.
-- URLs with path-variables (i.e `/:name`) have an additional function-argument to insert values.
-- Function-argument to insert path-variables is an object type-literal, whose keys match path-variable names.
-  - Path-variable object is validated both at runtime and compile time.
-- Path and search values are URL-encoded, so user input can't change the structure of a URL.
-- Route templates are validated once, when the object is set up, so typos fail fast.
+- Nested objects become full-URL functions, no repeated prefixes.
+- Every key, including nested objects, is a function; append search params with an object.
+- `._` on every function returns the original partial path.
+- Path-variables (`/:name`) add a function-argument, type-checked and validated at runtime.
+- Path and search values are URL-encoded against injection.
+- Route templates are validated once at setup, so typos fail fast.
 - **TypeScript-first** and fully type-safe.
 
----
-
-### Keep your routes organized
+<details>
+<summary><strong>Keep your routes organized</strong></summary>
 
 With **jet-paths**, you can keep all routes for your entire application neatly formatted into a single object—without repetitive prefixes or custom wrapper functions to insert URL parameters.
 
@@ -64,9 +59,10 @@ const BASE_USERS = `${BASE}/users`;
 }
 ```
 
----
+</details>
 
-### Insert path parameters and append search parameters
+<details>
+<summary><strong>Insert path parameters and append search parameters</strong></summary>
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 
@@ -87,6 +83,8 @@ Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5" - or
 Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s%40e.com"
 Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe/blah?ids=1&ids=2&ids=3"
 ```
+
+</details>
 
 <p align="center">· · ·</p>
 
@@ -145,6 +143,9 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
 
 ## 📥 Key behaviors to note
 
+<details>
+<summary><strong>Full list</strong></summary>
+
 - You may pass an object/s or no arguments at all when calling a URL function.
 - Keys in the function-argument object for path-variables must match path-variable names.
   - i.e, if the path is `/api/users/:id` object must be `{ id: 5 }`.
@@ -169,34 +170,16 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
   - Calling the function with no arguments returns the unformatted URL, and is typed as that exact string literal.
   - Calling it with arguments is typed as `string`.
 
+</details>
+
 <p align="center">· · ·</p>
 
 ## ⚙️ Options
 
-#### `prepend:` (`string` | `undefined`, default: `undefined`)
-
-Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
-
-> Note: routes in the object are validated; however, the `prepend` value is not.
-
-#### `disableRegex:` (`boolean` | `undefined`, default: `false`)
-
-Skips validating the route templates when `jetPaths()` is called. Path and search values are still encoded.
-
-<p align="center">· · ·</p>
-
-## 🚚 Migrating from v3
-
-- **ESM-only:** `require('jet-paths')` is no longer supported. Use `import` (Node.js 18+).
-- **Every key is a function:** nested objects are now callable, i.e. `Paths.Users()` returns `"/api/users"`.
-- **`._` is the partial path:** `Paths.Users._` is now `"/users"` (it used to be the full URL). Call `Paths.Users()` for the full URL.
-  - Because the routes object is now a function, `JSON.stringify(Paths)` returns `undefined` and `Object.keys(Paths)` includes `"_"`.
-- **Values are encoded:** i.e. `'a b'` becomes `'a%20b'` instead of throwing a validation error.
-- **Arrays in search params** are now repeated keys (`ids=1&ids=2`) instead of JSON (`ids=[1,2]`).
-- **`undefined` search values** are skipped instead of becoming `"undefined"`.
-- **Object search values** (including `Date`) now throw instead of being JSON-stringified.
-- **Validation moved to setup:** invalid templates now throw when `jetPaths()` is called instead of when a route is called. The rules also changed: UUIDs, slugs, kebab-case and `snake_case` query keys are all allowed now, while query strings inside templates are not.
-- **Return types:** calls with arguments are now typed as `string` instead of the unformatted template literal.
+| Option         | Type                     | Default     | Description                                                                                                                                                                                                                                                       |
+| -------------- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prepend`      | `string` \| `undefined`  | `undefined` | Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost. Note: routes in the object are validated; however, the `prepend` value is not. |
+| `disableRegex` | `boolean` \| `undefined` | `false`     | Skips validating the route templates when `jetPaths()` is called. Path and search values are still encoded.                                                                                                                                                       |
 
 <p align="center">· · ·</p>
 

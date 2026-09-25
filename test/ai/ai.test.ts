@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import jetPaths from '../src/index.js';
+import jetPaths from '../../src/index.js';
 
 // ========================================================================= //
 //                                   TESTS                                   //
