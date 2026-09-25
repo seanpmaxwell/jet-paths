@@ -38,8 +38,9 @@ Paths.Users.One._; // '/:id'
 - Every function has a `._` property which is the original unformatted partial path.
 - URLs with path-variables (i.e `/:name`) have an additional function-argument to insert values.
 - Function-argument to insert path-variables is an object type-literal, whose keys match path-variable names.
-  - Path-variable object is validated using both at runtime and compile time.
-- Regular-expression validation ensures URLs conform to a specific format.
+  - Path-variable object is validated both at runtime and compile time.
+- Path and search values are URL-encoded, so user input can't change the structure of a URL.
+- Route templates are validated once, when the object is set up, so typos fail fast.
 - **TypeScript-first** and fully type-safe.
 
 ---
@@ -65,7 +66,7 @@ const BASE_USERS = `${BASE}/users`;
 
 ---
 
-### Insert path paramters and append search parameters
+### Insert path parameters and append search parameters
 
 Mark URL parameters using `/:`. Any URL containing a parameter is automatically formatted as a function—both at runtime and compile time.
 
@@ -83,8 +84,8 @@ const Paths = jetPaths({
 });
 
 Paths.Users.FooBar({ id: 5, name: 'sean' }); // "/api/users/foo/sean/bar/5" - order doesn't matter
-Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s@e.com"
-Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe/blah?ids=[1,2,3]"
+Paths.Users.Search({ query: 's@e.com' }); // "/api/users/search?query=s%40e.com"
+Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe/blah?ids=1&ids=2&ids=3"
 ```
 
 <p align="center">· · ·</p>
@@ -96,6 +97,8 @@ Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe
 ```bash
 npm install jet-paths
 ```
+
+> **jet-paths** is ESM-only and requires Node.js 18 or later (or any modern bundler).
 
 ### Example
 
@@ -134,7 +137,8 @@ The object above is formatted into type-safe routes:
 ```ts
 Paths.Users(); // "localhost:3000/api/users"
 Paths.Users._; // "/users"
-Paths.Users.Delete({ id: 1 });
+Paths.Users.Delete({ id: 1 }); // "localhost:3000/api/users/delete/1"
+Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/private/delete/a/bar/2"
 ```
 
 <p align="center">· · ·</p>
@@ -144,16 +148,26 @@ Paths.Users.Delete({ id: 1 });
 - You may pass an object/s or no arguments at all when calling a URL function.
 - Keys in the function-argument object for path-variables must match path-variable names.
   - i.e, if the path is `/api/users/:id` object must be `{ id: 5 }`.
-- All paths must start with a forward-slash `/`.
+  - A path-variable name used more than once (i.e. `/:id/x/:id`) is only passed once and inserted everywhere.
 - Nested objects are functions too: calling one returns its full base URL (i.e. `Paths.Users()`), and its child routes are properties on it.
 - The `._` property is always the partial path from the original object, not the full URL (i.e. `Paths.Users.One._` is `'/:id'`).
-- A values for path-parameters must be a primitive type: i.e. `string | number | boolean | undefined | null`.
-- A values for search-parameters must be a primitive type or an array of primitives.
-  - If you want to pass an object (other than arrays) to a search parameter, you must stringify it first.
-- Regex validation happens after values are inserted/appended (exluding the `prepend` value).
-- Function parameters are optional in case you want to return the original string (i.e. testing)
-  - If there are path-variables and the path-variables argument is `undefined`, regex validation is skipped.
-  - Calling the function with no arguments returns the unformatted URL.
+- Route templates are validated once, when `jetPaths()` is called (see `disableRegex`):
+  - Every path must start with a forward-slash `/`. Only the `_` key may be an empty string.
+  - Static segments may contain letters, numbers, `-`, `.`, `_`, `~` and percent-escapes (i.e. `%20`), but can't be `.` or `..`.
+  - Path-variable names may contain letters, numbers and `_`, and must be a whole segment (`/:id`, not `/:id.json`).
+  - Query strings (`?`), fragments (`#`) and empty segments (`//`) are not allowed in templates.
+  - Invalid route values (anything other than a string or a plain object) and invalid templates throw an error naming the key path (i.e. `Users.One`).
+- Values for path-parameters must be a primitive type: i.e. `string | number | boolean | undefined | null`.
+  - Values are encoded with `encodeURIComponent`.
+  - Values which would change the structure of the URL (`''`, `'.'`, `'..'`) throw an error.
+- Values for search-parameters must be a primitive type or an array of primitives.
+  - Keys and values are encoded with `encodeURIComponent`.
+  - Arrays become repeated keys: `{ ids: [1, 2] }` → `?ids=1&ids=2`.
+  - `undefined` values are skipped; `null` becomes `"null"`.
+  - Objects (including `Date`) throw an error. Convert them to a string first (i.e. `date.toISOString()`).
+- Function parameters are optional in case you want to return the original string (i.e. testing).
+  - Calling the function with no arguments returns the unformatted URL, and is typed as that exact string literal.
+  - Calling it with arguments is typed as `string`.
 
 <p align="center">· · ·</p>
 
@@ -163,16 +177,31 @@ Paths.Users.Delete({ id: 1 });
 
 Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost.
 
-> Note: routes in the object are regex validated; however, the `prepend` value is not.
+> Note: routes in the object are validated; however, the `prepend` value is not.
 
 #### `disableRegex:` (`boolean` | `undefined`, default: `false`)
 
-Disables regular-expression check at the end of each function call.
+Skips validating the route templates when `jetPaths()` is called. Path and search values are still encoded.
+
+<p align="center">· · ·</p>
+
+## 🚚 Migrating from v3
+
+- **ESM-only:** `require('jet-paths')` is no longer supported. Use `import` (Node.js 18+).
+- **Every key is a function:** nested objects are now callable, i.e. `Paths.Users()` returns `"/api/users"`.
+- **`._` is the partial path:** `Paths.Users._` is now `"/users"` (it used to be the full URL). Call `Paths.Users()` for the full URL.
+  - Because the routes object is now a function, `JSON.stringify(Paths)` returns `undefined` and `Object.keys(Paths)` includes `"_"`.
+- **Values are encoded:** i.e. `'a b'` becomes `'a%20b'` instead of throwing a validation error.
+- **Arrays in search params** are now repeated keys (`ids=1&ids=2`) instead of JSON (`ids=[1,2]`).
+- **`undefined` search values** are skipped instead of becoming `"undefined"`.
+- **Object search values** (including `Date`) now throw instead of being JSON-stringified.
+- **Validation moved to setup:** invalid templates now throw when `jetPaths()` is called instead of when a route is called. The rules also changed: UUIDs, slugs, kebab-case and `snake_case` query keys are all allowed now, while query strings inside templates are not.
+- **Return types:** calls with arguments are now typed as `string` instead of the unformatted template literal.
 
 <p align="center">· · ·</p>
 
 ## 📄 License
 
-MIT © [seanpmaxwell1](LICENSE)
+MIT © [seanpmaxwell](LICENSE)
 
 Happy web deving! 🚀

@@ -16,7 +16,7 @@ export default defineConfig([
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: './tsconfig.json',
+        projectService: true,
       },
     },
     rules: {
@@ -33,8 +33,14 @@ export default defineConfig([
       'no-console': 'warn',
       'no-extra-boolean-cast': 'off',
       'no-process-env': 'warn',
-      // node correctness
-      'n/no-extraneous-import': 'error',
+    },
+  },
+  // tests intentionally pass invalid values with "as any"
+  {
+    files: ['test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
   // MUST be last — disables ALL formatting rules

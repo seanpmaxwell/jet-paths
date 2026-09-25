@@ -3,29 +3,35 @@
   "version": "4.0.0",
   "description": "A TypeScript-first utility for composing, validating, and formatting URL paths using nested objects.",
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "browser": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
-    "clean": "rm -rf dist && rm -rf cjs && rm -rf esm",
-    "clean:install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "clean:install": "rm -rf ./node_modules && rm -f package-lock.json && npm i",
     "commit": "npm run format && git add -A && git commit -m \"dev commit\"",
     "commit:push": "npm run commit && git push",
-    "pre-publish": "mv README.md README-git && mv README-npm README.md",
-    "post-publish": "mv README.md README-npm && mv README-git README.md",
-    "test": "NODE_ENV=test vitest"
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:dist": "node test/dist.smoke.mjs",
+    "prepublishOnly": "npm run typecheck && npm run lint && vitest run && npm run build && npm run test:dist",
+    "prepack": "mv README.md README-git.md && cp assets/README-npm.md README.md",
+    "postpack": "mv README-git.md README.md"
   },
   "repository": {
     "type": "git",
@@ -60,7 +66,6 @@
     "@eslint/js": "^9.26.0",
     "@stylistic/eslint-plugin": "^5.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.1",
-    "@types/node": "^22.8.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.8",
     "jiti": "^2.6.1",

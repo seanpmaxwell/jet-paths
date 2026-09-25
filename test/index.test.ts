@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import jetPaths from '../src';
+import jetPaths from '../src/index.js';
 
 // ========================================================================= //
 //                                 CONSTANTS                                 //
@@ -90,8 +90,10 @@ test('test jetPaths function and baseKey option', () => {
   expect(pathsFull.Posts.Misc({ id: -67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/-67/something/bar',
   );
-  // Should cause type error
-  // expect(() => pathsFull.Posts.Else({ foo: 'bar', id: 34 })).toThrowError();
+  expect(() =>
+    // @ts-expect-error - "foo" is not a path param
+    pathsFull.Posts.Else({ foo: 'bar', id: 34 }),
+  ).toThrowError();
   expect(pathsFull.Posts.Misc()).toStrictEqual(
     '/api/posts/misc/:id/something/:foo',
   );
@@ -116,8 +118,8 @@ test('test jetPaths prepending', () => {
   expect(paths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
-  // Should cause type error
-  // expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
+  // @ts-expect-error - unknown key
+  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
@@ -136,7 +138,8 @@ test('test more jetPaths prepending', () => {
   expect(paths.Users.Delete({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/delete/5',
   );
-  // expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
+  // @ts-expect-error - unknown key
+  expect(() => paths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 /**
@@ -151,34 +154,27 @@ test('test error catching', () => {
   const pathParams: PathParams = { id: 5, name: 'john' };
   const pathsFull = jetPaths(PATHS);
   expect(() => pathsFull.Posts.Other(pathParams)).not.toThrowError();
-  // @ts-ignore
+  // @ts-expect-error - wrong key name
   expect(() => pathsFull.Posts.Other({ idd: 5, name: 'bar' })).toThrowError();
   expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).toThrowError();
-  expect(() =>
-    // @ts-ignore
+    // @ts-expect-error - extra key
     pathsFull.Posts.Other({ id: 5, name: 'john', age: 5 }),
   ).toThrowError();
-  // @ts-ignore
+  // @ts-expect-error - missing key
   expect(() => pathsFull.Posts.Other({ id: 5 })).toThrowError();
-  const pathsDisableRegex = jetPaths(PATHS, { disableRegex: true });
-  expect(
-    pathsDisableRegex.Posts.Other({ id: 5, name: 'bar 62 23*(&^' }),
-  ).toStrictEqual('/api/posts/other/5/blah/bar 62 23*(&^');
-  // Test invalid SearchParams
-  expect(() =>
-    pathsFull.Posts.Other({ id: 5, name: 'n' }, { 55: 'bar 62 23*(&^' } as any),
-  ).toThrowError();
-  // Test invalid SearchParams (type-aliases instead of interface)
+  // Special characters are encoded instead of throwing
+  expect(pathsFull.Posts.Other({ id: 5, name: 'bar 62 23*(&^' })).toStrictEqual(
+    '/api/posts/other/5/blah/bar%2062%2023*(%26%5E',
+  );
+  expect(pathsFull.Posts.Misc({ id: '- 67', foo: 'bar' })).toStrictEqual(
+    '/api/posts/misc/-%2067/something/bar',
+  );
+  // Invalid SearchParams (nested object)
   expect(() =>
     pathsFull.Posts.Other({ id: 5, name: 'n' }, {
-      q: { woof: 'bar 62 23*(&^' },
+      q: { woof: 'bar' },
     } as any),
-  ).toThrowError();
-  // Should throw type error
-  // pathsFull.Posts.Other({ id: 5, name: 'n' }, { [5]: 'blah'})
-  expect(() => pathsFull.Posts.Misc({ id: '- 67', foo: 'bar' })).toThrowError();
+  ).toThrowError(/must be a primitive or an array of primitives/);
 });
 
 /**
@@ -191,5 +187,5 @@ test('appending search params', () => {
   expect(formattedURL).toStrictEqual('/api/users/search?name=foo&email=bar');
   // Test id
   const url = pathsFull.Users.Search({ name: 'foo', ids: [1, 2, 3] });
-  expect(url).toStrictEqual('/api/users/search?name=foo&ids=[1,2,3]');
+  expect(url).toStrictEqual('/api/users/search?name=foo&ids=1&ids=2&ids=3');
 });

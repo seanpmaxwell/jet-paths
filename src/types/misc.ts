@@ -2,7 +2,7 @@
 //                                   TYPES                                   //
 // ========================================================================= //
 
-type Primitive = string | number | boolean | null | undefined;
+export type Primitive = string | number | boolean | null | undefined;
 export type Dict = Record<string, unknown>;
 
 export type ArgObj = {
@@ -28,9 +28,14 @@ export type PathParams<Path extends string> = {
   [K in ParamNames<Path>]: Primitive;
 };
 
-export type SearchParams<T extends object> =
-  Exclude<keyof T, string> extends never
-    ? T extends { [K in keyof T]: Primitive | Primitive[] }
-      ? T
-      : never
-    : never;
+type SearchParamValue = Primitive | readonly Primitive[];
+
+type SearchParamsError =
+  'Error: search param values must be a primitive or an array of primitives';
+
+// Using a generic lets interfaces be passed (they have no index signature).
+// Invalid properties resolve to an error message so the compiler error
+// points at the offending key.
+export type SearchParams<T extends object> = {
+  [K in keyof T]: T[K] extends SearchParamValue ? T[K] : SearchParamsError;
+};

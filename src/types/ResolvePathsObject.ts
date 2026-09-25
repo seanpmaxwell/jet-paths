@@ -1,5 +1,5 @@
-import type { BASE_KEY } from '../constants/misc';
-import type { ArgObj, IOptions, PathParams, SearchParams } from './misc';
+import type { BASE_KEY } from '../constants/misc.js';
+import type { ArgObj, IOptions, PathParams, SearchParams } from './misc.js';
 
 // ========================================================================= //
 //                                   TYPES                                   //
@@ -13,12 +13,23 @@ type CollapseType<T> = {
 
 // ============================== `SetupNode` ============================== //
 
+// Calling with no arguments returns the template unchanged, so the literal
+// type is kept. Otherwise values are inserted and the result is a "string".
 type ResolveType<
   S extends string,
   P = CollapseType<PathParams<S>>,
 > = S extends `${string}/:${string}`
-  ? <T extends object>(pathParams?: P, searchParams?: SearchParams<T>) => S
-  : <T extends object>(searchParams?: SearchParams<T>) => S;
+  ? {
+      (): S;
+      <T extends object>(
+        pathParams: P | undefined,
+        searchParams?: SearchParams<T>,
+      ): string;
+    }
+  : {
+      (): S;
+      <T extends object>(searchParams: SearchParams<T> | undefined): string;
+    };
 
 // Joins two path segments, handling slashes cleanly.
 type Join<A extends string, B extends string> = A extends ''

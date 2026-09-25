@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import jetPaths from '../src';
+import jetPaths from '../src/index.js';
 
 // ========================================================================= //
 //                                   TESTS                                   //
@@ -86,26 +86,70 @@ describe('jetPaths edge cases', () => {
     );
   });
 
-  test('serializes search params for primitives, objects, arrays, and Date', () => {
+  test('serializes search params for primitives, arrays, null, and undefined', () => {
     const paths = jetPaths({
       _: '/api',
       Search: '/search',
     });
-    const date = new Date('2024-01-02T03:04:05.000Z');
 
     const url = paths.Search({
       q: 'foo',
       page: 2,
       active: false,
-      tags: ['a', 1],
-      meta: { role: 'admin' },
-      when: date,
+      tags: ['a', 1, undefined],
       none: undefined,
       n: null,
-    } as any);
+    });
 
     expect(url).toBe(
-      '/api/search?q=foo&page=2&active=false&tags=["a",1]&meta={"role":"admin"}&when="2024-01-02T03:04:05.000Z"&none=undefined&n=null',
+      '/api/search?q=foo&page=2&active=false&tags=a&tags=1&n=null',
+    );
+  });
+
+  test('throws for search values which are objects (including Date)', () => {
+    const paths = jetPaths({
+      _: '/api',
+      Search: '/search',
+    });
+
+    expect(() => paths.Search({ meta: { role: 'admin' } } as any)).toThrowError(
+      /"meta" must be a primitive/,
+    );
+    expect(() => paths.Search({ when: new Date() } as any)).toThrowError(
+      /"when" must be a primitive/,
+    );
+    expect(() => paths.Search({ fn: () => 1 } as any)).toThrowError(
+      /"fn" must be a primitive/,
+    );
+    expect(() => paths.Search({ ids: [[1]] } as any)).toThrowError(
+      /"ids" must be a primitive/,
+    );
+    expect(() => paths.Search('q=1' as any)).toThrowError(
+      /search params must be an object/i,
+    );
+  });
+
+  test('skips inherited properties on search params', () => {
+    const paths = jetPaths({ _: '/api', Search: '/search' });
+    class Query {
+      public a = 1;
+    }
+    Object.assign(Query.prototype, { inherited: 2 });
+
+    expect(paths.Search(new Query())).toBe('/api/search?a=1');
+  });
+
+  test('encodes search keys and values so they cannot inject params', () => {
+    const paths = jetPaths({ _: '/api', Search: '/search' });
+
+    expect(paths.Search({ q: 'a&admin=true' })).toBe(
+      '/api/search?q=a%26admin%3Dtrue',
+    );
+    expect(paths.Search({ q: 'hello world#top' })).toBe(
+      '/api/search?q=hello%20world%23top',
+    );
+    expect(paths.Search({ page_size: 10, 'a b': 'ü' })).toBe(
+      '/api/search?page_size=10&a%20b=%C3%BC',
     );
   });
 
@@ -118,25 +162,123 @@ describe('jetPaths edge cases', () => {
     expect(paths.Search({})).toBe('/api/search');
   });
 
-  test('validates URL format by default', () => {
+  test('encodes path values', () => {
     const paths = jetPaths({
       _: '/api',
       Users: {
         _: '/users',
         One: '/:id',
       },
-      Search: '/search',
     });
 
-    expect(() => paths.Users.One({ id: 'bad value' })).toThrowError(
-      /failed to pass validation/i,
+    expect(paths.Users.One({ id: 'bad value' })).toBe('/api/users/bad%20value');
+    expect(paths.Users.One({ id: '../../admin' })).toBe(
+      '/api/users/..%2F..%2Fadmin',
     );
-    expect(() => paths.Search({ bad_key: 'x' })).toThrowError(
-      /failed to pass validation/i,
+    expect(paths.Users.One({ id: 'a?b#c' })).toBe('/api/users/a%3Fb%23c');
+  });
+
+  test('accepts common real-world ids', () => {
+    const paths = jetPaths({
+      _: '/api',
+      Users: {
+        _: '/users',
+        One: '/:id',
+      },
+    });
+
+    expect(
+      paths.Users.One({ id: '550e8400-e29b-41d4-a716-446655440000' }),
+    ).toBe('/api/users/550e8400-e29b-41d4-a716-446655440000');
+    expect(paths.Users.One({ id: 'john_doe' })).toBe('/api/users/john_doe');
+    expect(paths.Users.One({ id: 1.5 })).toBe('/api/users/1.5');
+    expect(paths.Users.One({ id: -5 })).toBe('/api/users/-5');
+  });
+
+  test('throws for path values which would change the url structure', () => {
+    const paths = jetPaths({
+      _: '/api',
+      Users: {
+        _: '/users',
+        One: '/:id',
+      },
+    });
+
+    for (const id of ['', '.', '..']) {
+      expect(() => paths.Users.One({ id })).toThrowError(
+        /path value for "id"/i,
+      );
+    }
+    expect(() => paths.Users.One({ id: { a: 1 } } as any)).toThrowError(
+      /path value for "id"/i,
+    );
+    expect(() => paths.Users.One('5' as any)).toThrowError(
+      /path params must be an object/i,
     );
   });
 
-  test('bypasses URL validation when disableRegex=true', () => {
+  test('validates route templates at setup', () => {
+    const invalid = [
+      { _: '/api', A: 'a' },
+      { _: '/api', A: '/user profile' },
+      { _: '/api', A: '/a?b=1' },
+      { _: '/api', A: '/a/../b' },
+      { _: '/api', A: '/:id.json' },
+      { _: '/api', A: '' },
+      { _: 'api', A: '/a' },
+      { _: '/', A: '/a' },
+      { _: '/api', Users: { _: 'users', A: '/a' } },
+    ];
+    for (const routes of invalid) {
+      expect(() => jetPaths(routes as any)).toThrowError(
+        /failed to pass validation/i,
+      );
+    }
+    expect(() => jetPaths({ _: '/api', A: 'a' } as any)).toThrowError(
+      'Key path: "A", URL: "a"',
+    );
+    expect(() =>
+      jetPaths({ _: '/api', Users: { _: 'users' } } as any),
+    ).toThrowError('Key path: "Users._"');
+  });
+
+  test('allows valid route templates', () => {
+    const paths = jetPaths({
+      _: '',
+      Kebab: '/user-profile',
+      Dots: '/v1.0/file.json',
+      Tilde: '/~me',
+      Escaped: '/a%20b',
+      Slash: '/',
+      Users: {
+        _: '/users',
+        One: '/:user_id/',
+      },
+    });
+
+    expect(paths()).toBe('');
+    expect(paths.Kebab()).toBe('/user-profile');
+    expect(paths.Dots()).toBe('/v1.0/file.json');
+    expect(paths.Tilde()).toBe('/~me');
+    expect(paths.Escaped()).toBe('/a%20b');
+    expect(paths.Slash()).toBe('/');
+    expect(paths.Users.One({ user_id: 5 })).toBe('/users/5/');
+  });
+
+  test('keeps trailing slashes when inserting path values', () => {
+    const paths = jetPaths({ _: '/api', One: '/:id/' });
+
+    expect(paths.One()).toBe('/api/:id/');
+    expect(paths.One({ id: 5 })).toBe('/api/5/');
+  });
+
+  test('inserts the same value for repeated param names', () => {
+    const paths = jetPaths({ _: '/api', Dup: '/:id/x/:id' });
+
+    expect(paths.Dup({ id: 5 })).toBe('/api/5/x/5');
+  });
+
+  test('skips template validation when disableRegex=true', () => {
     const paths = jetPaths(
       {
         _: '/api',
@@ -144,15 +286,19 @@ describe('jetPaths edge cases', () => {
           _: '/users',
           One: '/:id',
         },
-        Search: '/search',
+        Odd: '/a b',
       },
       { disableRegex: true },
     );
 
+    expect(paths.Odd()).toBe('/api/a b');
+    // Values are still encoded
     expect(paths.Users.One({ id: 'bad value*&' })).toBe(
-      '/api/users/bad value*&',
+      '/api/users/bad%20value*%26',
     );
-    expect(paths.Search({ bad_key: 'x' })).toBe('/api/search?bad_key=x');
+    expect(paths.Users.One({ id: '../../admin' })).toBe(
+      '/api/users/..%2F..%2Fadmin',
+    );
   });
 
   test('applies prepend after validation', () => {
@@ -172,7 +318,7 @@ describe('jetPaths edge cases', () => {
 
   test('throws when root base key is missing', () => {
     expect(() => jetPaths({ Users: { _: '/users' } } as any)).toThrowError(
-      /base key must exist/i,
+      'Key path: "(root)"',
     );
   });
 
@@ -184,7 +330,7 @@ describe('jetPaths edge cases', () => {
           Add: '/add',
         },
       } as any),
-    ).toThrowError(/base key must exist/i);
+    ).toThrowError(/base key "_" must exist/i);
 
     expect(() =>
       jetPaths({
@@ -194,16 +340,18 @@ describe('jetPaths edge cases', () => {
           Add: '/add',
         },
       } as any),
-    ).toThrowError(/base key must exist/i);
+    ).toThrowError('Key path: "Users"');
   });
 
-  test('throws when nested non-object route values recurse into invalid shapes', () => {
+  test('throws for route values which are not strings or plain objects', () => {
+    for (const value of [[], null, 5, true]) {
+      expect(() => jetPaths({ _: '/api', Bad: value } as any)).toThrowError(
+        'Route values must be a string or a plain object. Key path: "Bad".',
+      );
+    }
     expect(() =>
-      jetPaths({
-        _: '/api',
-        Bad: [],
-      } as any),
-    ).toThrowError(/base key must exist/i);
+      jetPaths({ _: '/api', Users: { _: '/users', Bad: null } } as any),
+    ).toThrowError('Key path: "Users.Bad"');
   });
 
   test('treats first argument as search params for static routes', () => {
