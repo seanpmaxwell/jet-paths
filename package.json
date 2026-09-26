@@ -31,9 +31,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:dist": "node test/ai/dist.smoke.mjs",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:dist",
-    "prepack": "mv README.md README-git.md && cp assets/README-npm.md README.md",
-    "postpack": "mv README-git.md README.md"
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:dist"
   },
   "repository": {
     "type": "git",
