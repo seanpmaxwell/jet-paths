@@ -8,10 +8,9 @@
 
 Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path parameters and append search parameters easily and consistently.
 
-<p align="center">· · ·</p>
-
 ## 👀 At a glance
 
+<!-- prettier-ignore -->
 ```ts
 const Paths = jetPaths({
   _: '/api',
@@ -22,11 +21,11 @@ const Paths = jetPaths({
   },
 });
 
-Paths.Users.Get(); // '/api/users/all'
-Paths.Users(); // '/api/users'
-Paths.Users._; // '/users'
-Paths.Users.One({ id: 5 }); // '/api/users/5'
-Paths.Users.One._; // '/:id'
+Paths.Users.Get();           // '/api/users/all'
+Paths.Users();               // '/api/users'
+Paths.Users._;               // '/users'
+Paths.Users.One({ id: 5 });  // '/api/users/5'
+Paths.Users.One._;           // '/:id'
 ```
 
 Please refer to the official <a href="https://github.com/seanpmaxwell/jet-paths">github repo</a> for the most up-to-date documentation.

@@ -10,6 +10,7 @@ Recursively formats an object of URLs so that full paths are set up automaticall
 
 ## 👀 At a glance
 
+<!-- prettier-ignore -->
 ```ts
 const Paths = jetPaths({
   _: '/api',
@@ -20,11 +21,11 @@ const Paths = jetPaths({
   },
 });
 
-Paths.Users.Get(); // '/api/users/all'
-Paths.Users(); // '/api/users'
-Paths.Users._; // '/users'
-Paths.Users.One({ id: 5 }); // '/api/users/5'
-Paths.Users.One._; // '/:id'
+Paths.Users.Get();           // '/api/users/all'
+Paths.Users();               // '/api/users'
+Paths.Users._;               // '/users'
+Paths.Users.One({ id: 5 });  // '/api/users/5'
+Paths.Users.One._;           // '/:id'
 ```
 
 <p align="center">· · ·</p>
