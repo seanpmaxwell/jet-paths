@@ -35,6 +35,7 @@ Paths.Users._;                 // '/users'
 Paths.Users.One({ id: 5 });    // '/api/users/5'
 Paths.Users.One({ name: 5 });  // Type error: 'name' does not exist in type '{ id: Primitive }'
 Paths.Users.One._;             // '/:id'
+Paths._;                       // '/api'
 ```
 
 <p align="center">· · ·</p>
