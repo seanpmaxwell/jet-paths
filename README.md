@@ -1,4 +1,4 @@
-# jet-paths ✈️
+# ✈️ jet-paths
 
 [![npm version](https://img.shields.io/npm/v/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
 [![npm downloads](https://img.shields.io/npm/dm/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
@@ -7,6 +7,16 @@
 [![License](https://img.shields.io/npm/l/jet-paths.svg)](LICENSE)
 
 Recursively formats an object of URLs so that full paths are set up automatically, allowing you to insert path parameters and append search parameters easily and consistently.
+
+## 📦 Installation
+
+```bash
+npm install jet-paths
+```
+
+> **jet-paths** is ESM-only and requires Node.js 18 or later (or any modern bundler).
+
+<p align="center">· · ·</p>
 
 ## 👀 At a glance
 
@@ -21,11 +31,12 @@ const Paths = jetPaths({
   },
 });
 
-Paths.Users.Get();           // '/api/users/all'
-Paths.Users();               // '/api/users'
-Paths.Users._;               // '/users'
-Paths.Users.One({ id: 5 });  // '/api/users/5'
-Paths.Users.One._;           // '/:id'
+Paths.Users.Get();             // '/api/users/all'
+Paths.Users();                 // '/api/users'
+Paths.Users._;                 // '/users'
+Paths.Users.One({ id: 5 });    // '/api/users/5'
+Paths.Users.One({ name: 5 });  // Type error: 'name' does not exist in type '{ id: Primitive }'
+Paths.Users.One._;             // '/:id'
 ```
 
 <p align="center">· · ·</p>
@@ -90,16 +101,6 @@ Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe
 <p align="center">· · ·</p>
 
 ## ⚡ Quick Start
-
-### Installation
-
-```bash
-npm install jet-paths
-```
-
-> **jet-paths** is ESM-only and requires Node.js 18 or later (or any modern bundler).
-
-### Example
 
 ```ts
 import jetPaths from 'jet-paths';
