@@ -2,6 +2,5 @@
 //                                 CONSTANTS                                 //
 // ========================================================================= //
 
-// Misc
 export const BASE_KEY = '_';
 export const ROOT_KEY_PATH = '(root)';

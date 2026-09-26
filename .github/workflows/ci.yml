@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+
+# A new push to the same branch/PR cancels the run that's still going.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        # 18 is the floor in `engines`; the rest are the live majors.
+        node: ['18', '20', '22', '24']
+        include:
+          # Cover a second OS once, on the newest Node.
+          - os: macos-latest
+            node: '24'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # `--ignore-scripts` skips any dependency postinstall scripts; there's
+      # no local install-time script here, and the build below is its own
+      # step with its own failure message either way.
+      - run: npm ci --ignore-scripts
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:run
+      - run: npm run build
+      # Imports the built package the same way a consumer would, through
+      # its "exports" field.
+      - run: npm run test:dist
