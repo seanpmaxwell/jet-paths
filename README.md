@@ -1,4 +1,4 @@
-# ✈️ jet-paths
+# ✈️ &nbsp; jet-paths
 
 [![npm version](https://img.shields.io/npm/v/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
 [![npm downloads](https://img.shields.io/npm/dm/jet-paths.svg)](https://www.npmjs.com/package/jet-paths)
