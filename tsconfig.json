@@ -1,12 +1,33 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true
+
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    "noEmit": true,
+
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@cmn/*": ["./src/_common/*"],
+      "@test/*": ["./test/*"]
+    }
   },
-  "include": ["src", "test", "eslint.config.ts"]
+  "include": [
+    "src",
+    "test",
+    "*.config.ts",
+    "playground",
+    "scripts",
+    "dev-tools/*.ts"
+  ],
+  "exclude": ["node_modules", "lib", "**/*.tmp*"]
 }

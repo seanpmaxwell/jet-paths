@@ -1,6 +1,6 @@
 import { expectTypeOf, test } from 'vitest';
 
-import jetPaths from '../../src/index.js';
+import jetPaths from '../../src/index';
 
 // ========================================================================= //
 //                                 CONSTANTS                                 //
@@ -20,6 +20,19 @@ const PathsPrepend = jetPaths(
   { _: '/api', Users: { _: '/users', One: '/:id' } },
   { prepend: 'http://localhost:3000' },
 );
+
+// ========================================================================= //
+//                                   TYPES                                   //
+// ========================================================================= //
+
+type Primitive = string | number | boolean | null | undefined;
+
+/**
+ * Only type-check the callback, never run it.
+ */
+function typeOnly(_fn: () => void): void {
+  return;
+}
 
 // ========================================================================= //
 //                                   TESTS                                   //
@@ -87,16 +100,3 @@ test('search params reject objects', () => {
     Paths.Users.One({ id: 1 }, { meta: { role: 'admin' } });
   });
 });
-
-// ========================================================================= //
-//                                  HELPERS                                  //
-// ========================================================================= //
-
-type Primitive = string | number | boolean | null | undefined;
-
-/**
- * Only type-check the callback, never run it.
- */
-function typeOnly(_fn: () => void): void {
-  return;
-}

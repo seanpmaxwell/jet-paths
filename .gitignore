@@ -7,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*on
 
 # Runtime data
 pids
@@ -74,18 +74,19 @@ web_modules/
 .cache
 .parcel-cache
 
-# Next.js build output
+# Next build output
 .next
 out
 
-# Nuxt.js build / generate output
+# Nuxt build / generate output
 .nuxt
 dist
+lib
 .output
 
 # Gatsby files
 .cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
+# Comment in the public line in if your project uses Gatsby and not Next
 # https://nextjs.org/blog/next-9-1#public-directory-support
 # public
 
@@ -139,6 +140,8 @@ dist
 !.yarn/versions
 
 # Vite files
-vite.config.js.timestamp-*
+vite.config.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+workflows
