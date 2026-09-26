@@ -33,7 +33,7 @@ Paths.Users.Get();             // '/api/users/all'
 Paths.Users();                 // '/api/users'
 Paths.Users._;                 // '/users'
 Paths.Users.One({ id: 5 });    // '/api/users/5'
-Paths.Users.One({ name: 5 });  // Type error: 'name' does not exist in type '{ id: Primitive }'
+Paths.Users.One({ name: 5 });  // ❌ Type error: 'name' does not exist in type '{ id: Primitive }'
 Paths.Users.One._;             // '/:id'
 Paths._;                       // '/api'
 ```
@@ -143,10 +143,10 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
 
 <p align="center">· · ·</p>
 
-## 📥 Key behaviors to note
+## 📥 Other behaviors to note
 
 <details>
-<summary><strong>Full list</strong></summary>
+<summary><strong>Show list</strong></summary>
 
 - You may pass an object/s or no arguments at all when calling a URL function.
 - Keys in the function-argument object for path-variables must match path-variable names.
@@ -157,7 +157,7 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
 - Route templates are validated once, when `jetPaths()` is called (see `disableRegex`):
   - Every path must start with a forward-slash `/`. Only the `_` key may be an empty string.
   - Static segments may contain letters, numbers, `-`, `.`, `_`, `~` and percent-escapes (i.e. `%20`), but can't be `.` or `..`.
-  - Path-variable names may contain letters, numbers and `_`, and must be a whole segment (`/:id`, not `/:id.json`).
+  - Path-variable names may contain letters, numbers and `_`, and must be a whole segment (`/:id`, not `/:idon`).
   - Query strings (`?`), fragments (`#`) and empty segments (`//`) are not allowed in templates.
   - Invalid route values (anything other than a string or a plain object) and invalid templates throw an error naming the key path (i.e. `Users.One`).
 - Values for path-parameters must be a primitive type: i.e. `string | number | boolean | undefined | null`.

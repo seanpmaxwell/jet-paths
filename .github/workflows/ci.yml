@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        # 18 is the floor in `engines`; the rest are the live majors.
+        # Node 18 covers the built package; its development tools run on 24.
         node: ['18', '20', '22', '24']
         include:
           # Cover a second OS once, on the newest Node.
@@ -27,9 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node for development tools
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node == '18' && '24' || matrix.node }}
           cache: npm
 
       # `--ignore-scripts` skips any dependency postinstall scripts; there's
@@ -42,6 +43,13 @@ jobs:
       - run: npm run format:check
       - run: npm run test:run
       - run: npm run build
+
+      - name: Switch to Node 18 for runtime compatibility
+        if: matrix.node == '18'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       # Imports the built package the same way a consumer would, through
       # its "exports" field.
-      - run: npm run test:dist
+      - run: npm run test:lib

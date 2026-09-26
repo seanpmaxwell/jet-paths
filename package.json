@@ -3,35 +3,36 @@
   "version": "4.0.1",
   "description": "A TypeScript-first utility for composing, validating, and formatting URL paths using nested objects.",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
     }
   },
   "files": [
-    "dist"
+    "lib"
   ],
   "sideEffects": false,
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist",
-    "clean:install": "rm -rf ./node_modules && rm -f package-lock.json && npm i",
+    "build": "tsx scripts/build.ts",
+    "clean": "rm -rf lib",
+    "install:clean": "rm -rf ./node_modules && rm -f package-lock.json && npm i",
     "commit": "npm run format && git add -A && git commit -m \"dev commit\"",
     "commit:push": "npm run commit && git push",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:dist": "node test/ai/dist.smoke.mjs",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:dist"
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:lib": "node test/ai/lib.smoke.mjs",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:lib"
   },
   "repository": {
     "type": "git",
@@ -63,15 +64,24 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
+    "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.1",
-    "eslint": "^9.26.0",
+    "@types/node": "^26.6.3",
+    "@vitest/browser": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.11",
+    "dts-bundle-generator": "^9.5.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
+    "jet-logger": "^3.0.0",
     "jiti": "^2.6.1",
+    "playwright": "^1.63.0",
     "prettier": "^3.7.4",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.50.0",
-    "vitest": "^4.0.15"
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.11"
   }
 }

@@ -11,6 +11,3 @@ const PARAM = String.raw`:[A-Za-z0-9_]+`;
 export const TEMPLATE_REGEX = new RegExp(
   String.raw`^(?:\/(?:${PARAM}|${SEGMENT}))*\/?$`,
 );
-
-// Matches path params. Must stay in sync with "ParamNames" in the types.
-export const PARAM_REGEX = /\/:([^/]+)/g;

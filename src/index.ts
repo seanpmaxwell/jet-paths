@@ -1,7 +1,1 @@
-import jetPaths from './setupPaths.js';
-
-// ========================================================================= //
-//                                  EXPORT                                   //
-// ========================================================================= //
-
-export default jetPaths;
+export { default as default } from './api/jetPaths';

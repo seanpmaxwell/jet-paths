@@ -1,8 +1,11 @@
-import Errors from './constants/Errors.js';
-import { BASE_KEY, ROOT_KEY_PATH } from './constants/misc.js';
-import { PARAM_REGEX, TEMPLATE_REGEX } from './constants/regexes.js';
-import type { ArgObj, IOptions, Primitive } from './types/misc.js';
-import type { ResolvePathsObject } from './types/ResolvePathsObject.js';
+import { PARAM_REGEX } from '@cmn/constants/regexes';
+import { addProperty, isPlainObject, isPrimitive } from '@cmn/fns/misc';
+
+import Errors from './_local/constants/Errors';
+import { BASE_KEY, ROOT_KEY_PATH } from './_local/constants/misc';
+import { TEMPLATE_REGEX } from './_local/constants/regexes';
+import type { JetPathsOptions, JetPathsParamObject } from './_local/types/misc';
+import type { ResolveJetPathsObject } from './_local/types/ResolveJetPathsObject';
 
 // ========================================================================= //
 //                                   TYPES                                   //
@@ -25,24 +28,24 @@ type PathFunction = ((...args: unknown[]) => string) & {
 /**
  * Format path object.
  */
-function setupPaths<
-  const T extends ArgObj,
-  const U extends IOptions | undefined,
->(pathObj: T, options?: U): ResolvePathsObject<T, U> {
+function jetPaths<
+  const T extends JetPathsParamObject,
+  const U extends JetPathsOptions | undefined,
+>(pathObj: T, options?: U): ResolveJetPathsObject<T, U> {
   const settings: ISettings = {
     prepend: options?.prepend ?? '',
     validate: !options?.disableRegex,
   };
   // The runtime shape can't be proven to match the recursive public type
-  const retVal = setupNode(pathObj, settings, '', []);
-  return retVal as unknown as ResolvePathsObject<T, U>;
+  const retVal = setupNode(pathObj, settings, '');
+  return retVal as unknown as ResolveJetPathsObject<T, U>;
 }
 
 /**
  * The recursive function. Sets up the function for an object and attaches
  * its children as properties.
  *
- * Used by: {@link setupPaths}
+ * Used by: {@link jetPaths}
  *
  * @private
  */
@@ -50,15 +53,15 @@ function setupNode(
   node: unknown,
   settings: ISettings,
   parentUrl: string,
-  keyPath: string[],
+  keyPath?: string,
 ): PathFunction {
   // Validate
   if (!isPlainObject(node)) {
-    throw Errors.RouteValue(formatKeyPath(keyPath));
+    throw Errors.RouteValue(keyPath ?? ROOT_KEY_PATH);
   }
   const baseUrl = node[BASE_KEY];
   if (typeof baseUrl !== 'string') {
-    throw Errors.BaseKey(formatKeyPath(keyPath));
+    throw Errors.BaseKey(keyPath ?? ROOT_KEY_PATH);
   }
   // Init vars
   const localBaseUrl = parentUrl + baseUrl,
@@ -68,7 +71,7 @@ function setupNode(
     if (key === BASE_KEY) {
       continue;
     }
-    const childKeyPath = [...keyPath, key];
+    const childKeyPath = keyPath === undefined ? key : `${keyPath}.${key}`;
     const child =
       typeof value === 'string'
         ? setupPathFn(
@@ -97,7 +100,7 @@ function setupPathFn(
   partialUrl: string,
   fullUrl: string,
   settings: ISettings,
-  keyPath: string[],
+  keyPath: string | undefined,
   isBaseKey: boolean,
 ): PathFunction {
   if (settings.validate) {
@@ -115,8 +118,8 @@ function setupPathFn(
       insertPathParams(fullUrl, paramNames, pathValues) +
       setupSearchParams(searchValues);
   } else {
-    retVal = (searchValues?: unknown) =>
-      prepend + fullUrl + setupSearchParams(searchValues);
+    const url = prepend + fullUrl;
+    retVal = (searchValues?: unknown) => url + setupSearchParams(searchValues);
   }
   // Return
   addProperty(retVal, BASE_KEY, partialUrl);
@@ -133,12 +136,14 @@ function setupPathFn(
 function validateTemplate(
   partialUrl: string,
   fullUrl: string,
-  keyPath: string[],
+  keyPath: string | undefined,
   isBaseKey: boolean,
 ): void {
-  const errorKeyPath = formatKeyPath(
-    isBaseKey ? [...keyPath, BASE_KEY] : keyPath,
-  );
+  const errorKeyPath = isBaseKey
+    ? keyPath === undefined
+      ? BASE_KEY
+      : `${keyPath}.${BASE_KEY}`
+    : (keyPath ?? ROOT_KEY_PATH);
   // Only base keys may be empty, everything else must start with a "/"
   if (!isBaseKey && !partialUrl.startsWith('/')) {
     throw Errors.Template(errorKeyPath, partialUrl);
@@ -238,69 +243,8 @@ function setupSearchParams(searchValues: unknown): string {
 
 // ================================ Helpers ================================ //
 
-/**
- * Format the key path for error messages (i.e. "Users.One"). An empty key
- * path is the root object.
- *
- * Used by: {@link setupNode}, {@link validateTemplate}
- *
- * @private
- */
-function formatKeyPath(keyPath: string[]): string {
-  return keyPath.length > 0 ? keyPath.join('.') : ROOT_KEY_PATH;
-}
-
-/**
- * Use "defineProperty" so keys which collide with built-in function
- * properties (i.e. "name", "length") can still be set.
- *
- * Used by: {@link setupNode}, {@link setupPathFn}
- *
- * @private
- */
-function addProperty(target: object, key: string, value: unknown): void {
-  Object.defineProperty(target, key, {
-    value,
-    enumerable: true,
-    writable: false,
-    configurable: false,
-  });
-}
-
-/**
- * Check if a value is one of the primitives allowed for path and search
- * values. Functions, symbols, and bigints are rejected so they aren't
- * stringified into the url.
- *
- * Used by: {@link encodePathValue}, {@link setupSearchParams}
- *
- * @private
- */
-function isPrimitive(value: unknown): value is Primitive {
-  const type = typeof value;
-  return (
-    value === null ||
-    type === 'string' ||
-    type === 'number' ||
-    type === 'boolean' ||
-    type === 'undefined'
-  );
-}
-
-/**
- * Check if a value can be a nested route object. Arrays are rejected even
- * though their "typeof" is "object".
- *
- * Used by: {@link setupNode}
- *
- * @private
- */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 // ========================================================================= //
 //                                  EXPORT                                   //
 // ========================================================================= //
 
-export default setupPaths;
+export default jetPaths;

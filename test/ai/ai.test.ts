@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import jetPaths from '../../src/index.js';
+import jetPaths from '@src/index';
 
 // ========================================================================= //
 //                                   TESTS                                   //
@@ -246,7 +246,7 @@ describe('jetPaths edge cases', () => {
     const paths = jetPaths({
       _: '',
       Kebab: '/user-profile',
-      Dots: '/v1.0/file.json',
+      Dots: '/v1.0/fileon',
       Tilde: '/~me',
       Escaped: '/a%20b',
       Slash: '/',
@@ -258,11 +258,32 @@ describe('jetPaths edge cases', () => {
 
     expect(paths()).toBe('');
     expect(paths.Kebab()).toBe('/user-profile');
-    expect(paths.Dots()).toBe('/v1.0/file.json');
+    expect(paths.Dots()).toBe('/v1.0/fileon');
     expect(paths.Tilde()).toBe('/~me');
     expect(paths.Escaped()).toBe('/a%20b');
     expect(paths.Slash()).toBe('/');
     expect(paths.Users.One({ user_id: 5 })).toBe('/users/5/');
+  });
+
+  test('preserves empty and dotted property names in validation errors', () => {
+    expect(() =>
+      jetPaths({ _: '/api', '': { _: '/empty', Bad: 'bad' } }),
+    ).toThrowError('Key path: ".Bad", URL: "bad"');
+    expect(() => jetPaths({ _: '/api', '': {} } as any)).toThrowError(
+      'Key path: "".',
+    );
+    expect(() => jetPaths({ _: '/api', '': { _: 'bad' } })).toThrowError(
+      'Key path: "._", URL: "bad"',
+    );
+    expect(() =>
+      jetPaths({ _: '/api', 'Users.V1': { _: '/users', Bad: null } } as any),
+    ).toThrowError('Key path: "Users.V1.Bad".');
+  });
+
+  test('reports the full URL when joined templates are invalid', () => {
+    expect(() => jetPaths({ _: '/api/', Users: { _: '/users' } })).toThrowError(
+      'Key path: "Users._", URL: "/api//users"',
+    );
   });
 
   test('keeps trailing slashes when inserting path values', () => {

@@ -1,16 +1,15 @@
+import { Primitive } from '@cmn/types/misc';
+
 // ========================================================================= //
 //                                   TYPES                                   //
 // ========================================================================= //
 
-export type Primitive = string | number | boolean | null | undefined;
-export type Dict = Record<string, unknown>;
-
-export type ArgObj = {
+export type JetPathsParamObject = {
   _: string;
-  [key: string]: string | ArgObj;
+  [key: string]: string | JetPathsParamObject;
 };
 
-export interface IOptions {
+export interface JetPathsOptions {
   prepend?: string;
   disableRegex?: boolean;
 }
