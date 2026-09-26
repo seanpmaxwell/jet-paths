@@ -14,8 +14,6 @@ Recursively formats an object of URLs so that full paths are set up automaticall
 npm install jet-paths
 ```
 
-> **jet-paths** is ESM-only and requires Node.js 18 or later (or any modern bundler).
-
 <p align="center">· · ·</p>
 
 ## 👀 At a glance
@@ -44,6 +42,7 @@ Paths.Users.One._;             // '/:id'
 ## 🤔 Why jet-paths?
 
 - Nested objects become full-URL functions, no repeated prefixes.
+- Single source of truth for all your routes
 - Every key, including nested objects, is a function; append search params with an object.
 - `._` on every function returns the original partial path.
 - Path-variables (`/:name`) add a function-argument, type-checked and validated at runtime.
