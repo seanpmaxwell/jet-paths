@@ -14,7 +14,7 @@ Recursively formats an object of URLs so that full paths are set up automaticall
 npm install jet-paths
 ```
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## 👀 At a glance
 
@@ -38,7 +38,7 @@ Paths.Users.One._;             // '/:id'
 Paths._;                       // '/api'
 ```
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## 🤔 Why jet-paths?
 
@@ -98,7 +98,7 @@ Paths.Users.Other({ name: 'joe' }, { ids: [1, 2, 3] }); // "/api/users/other/joe
 
 </details>
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## ⚡ Quick Start
 
@@ -141,7 +141,7 @@ Paths.Users.Delete({ id: 1 }); // "localhost:3000/api/users/delete/1"
 Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/private/delete/a/bar/2"
 ```
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## 📥 Other behaviors to note
 
@@ -174,7 +174,7 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
 
 </details>
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## ⚙️ Options
 
@@ -183,7 +183,7 @@ Paths.Posts.Private.Delete({ foo: 'a', id: 2 }); // "localhost:3000/api/posts/pr
 | `prepend`      | `string` \| `undefined`  | `undefined` | Prepends a string to the beginning of every route. While this can also be achieved via the root `_` key, passing a non-constant value here will cause type information to be lost. Note: routes in the object are validated; however, the `prepend` value is not. |
 | `disableRegex` | `boolean` \| `undefined` | `false`     | Skips validating the route templates when `jetPaths()` is called. Path and search values are still encoded.                                                                                                                                                       |
 
-<p align="center">· · ·</p>
+<p align="center">* * *</p>
 
 ## 📄 License
 
