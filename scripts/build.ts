@@ -27,11 +27,7 @@ await onInit(async () => {
   ]);
 
   // ---- Build and bundle runtime code
-  // The version is inlined so the CLI's `--version` needs no filesystem read.
-  const pkgJson = await fs.readFile('package.json', 'utf8');
-  const { version } = JSON.parse(pkgJson) as { version: string };
   await esbuild({
-    define: { __JET_ID_VERSION__: JSON.stringify(version) },
     entryPoints: {
       index: 'src/index.ts',
     },

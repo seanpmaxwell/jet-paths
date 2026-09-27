@@ -34,8 +34,8 @@ export function isPrimitive(value: unknown): value is Primitive {
 }
 
 /**
- * Check if a value can be a nested route object. Arrays are rejected even
- * though their "typeof" is "object".
+ * Accept plain route objects and null-prototype dictionaries. Instances and
+ * custom prototypes are rejected because traversal reads own properties only.
  *
  * Used by: {@link setupNode}
  *
@@ -44,5 +44,9 @@ export function isPrimitive(value: unknown): value is Primitive {
 export function isPlainObject(
   value: unknown,
 ): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const prototype: unknown = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }
