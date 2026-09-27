@@ -1,0 +1,8 @@
+# Formatting fixtures for code-divider itself
+playground/templates/
+playground/tmp/
+# Build output
+lib/
+node_modules/
+package-lock.json
+README.md

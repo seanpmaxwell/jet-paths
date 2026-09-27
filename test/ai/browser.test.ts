@@ -4,12 +4,16 @@ import { expect, test } from 'vitest';
 
 import jetPaths from '@src/index';
 
+// ========================================================================= //
+//                                   TESTS                                   //
+// ========================================================================= //
+
 test('generated URLs preserve path and query values in a real browser', () => {
   expect(globalThis).toHaveProperty('window', globalThis);
   expect(globalThis).toHaveProperty('document');
 
   const paths = jetPaths(
-    { _: '/api', Users: { _: '/users', One: '/:id' } },
+    { $path: '/api', Users: { $path: '/users', One: '/:id' } },
     { prepend: 'https://example.test' },
   );
   const url = new URL(
@@ -36,7 +40,7 @@ test('generated URLs preserve path and query values in a real browser', () => {
 });
 
 test('relative routes resolve against a browser URL without losing query values', () => {
-  const paths = jetPaths({ _: '/api', Search: '/search' });
+  const paths = jetPaths({ $path: '/api', Search: '/search' });
   const url = new URL(
     paths.Search({ q: 'hello world', active: false, page: 2 }),
     'https://example.test/app/',

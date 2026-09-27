@@ -1,8 +1,12 @@
-import type { BASE_KEY } from '../constants/misc';
+import type { PATH_KEY } from '../constants/misc';
 import type {
+  DeclaredSearchParams,
+  HasRequiredSearchKey,
   JetPathsOptions,
   JetPathsParamObject,
   PathParams,
+  RoutePath,
+  RouteSearchKeys,
   SearchParams,
 } from './misc';
 
@@ -10,59 +14,117 @@ import type {
 //                                   TYPES                                   //
 // ========================================================================= //
 
-type BaseKey = typeof BASE_KEY;
+type PathKey = typeof PATH_KEY;
 
 // ============================== `SetupNode` ============================== //
 
-// Calling with no arguments returns the template unchanged, so the literal
-// type is kept. Otherwise values are inserted and the result is a "string".
-type ResolveType<
+// A url with at least one path param.
+type ParamUrl = `${string}/:${string}`;
+
+// Rejects keys which aren't in "Expected", even through variables and spreads.
+// Without extra keys it's just "Actual", so errors show the expected type.
+type Exact<Actual, Expected> = [Exclude<keyof Actual, keyof Expected>] extends [
+  never,
+]
+  ? Actual
+  : Actual & Record<Exclude<keyof Actual, keyof Expected>, never>;
+
+// An insertion function (a url with path params). The path params object is
+// required. The search params are optional, unless the route declares a
+// required search key.
+type InsertionFn<
   S extends string,
+  Keys extends string,
   P = { [K in keyof PathParams<S>]: PathParams<S>[K] },
-> = S extends `${string}/:${string}`
+  D = DeclaredSearchParams<Keys>,
+> = [Keys] extends [never]
   ? {
-      (): S;
-      <T extends object>(
-        pathParams: P | undefined,
+      <Actual extends P, T extends object>(
+        pathParams: Exact<Actual, P>,
         searchParams?: SearchParams<T>,
       ): string;
     }
-  : {
-      (): S;
-      <T extends object>(searchParams: SearchParams<T> | undefined): string;
-    };
+  : HasRequiredSearchKey<Keys> extends true
+    ? {
+        <Actual extends P, Search extends D>(
+          pathParams: Exact<Actual, P>,
+          searchParams: Exact<Search, D>,
+        ): string;
+      }
+    : {
+        <Actual extends P, Search extends D>(
+          pathParams: Exact<Actual, P>,
+          searchParams?: Exact<Search, D>,
+        ): string;
+      };
+
+// A url without path params. When arguments are passed, the search params are
+// required. Routes which declare search keys only accept those keys.
+type SearchFn<Keys extends string, D = DeclaredSearchParams<Keys>> = [
+  Keys,
+] extends [never]
+  ? { <T extends object>(searchParams: SearchParams<T>): string }
+  : { <Search extends D>(searchParams: Exact<Search, D>): string };
 
 // Concatenates two path segments.
 type Join<A extends string, B extends string> = `${A}${B}`;
 
-// A function which returns the full url, with the original partial url on "_"
-type PathFn<Full extends string, Part extends string> = ResolveType<Full> & {
-  readonly _: Part;
+// A function which builds the url, with the local path template on "$path".
+// Functions which need arguments (insertion functions and routes with a
+// required search key) can't be called without them, so the complete path
+// template (including parent paths and any prefix) is on "$tmpl". Other
+// functions return their url when called with no arguments. That signature
+// comes first so the other one is what "Parameters" and similar utilities see.
+type PathFn<
+  Route extends string,
+  Part extends string,
+  Prefix extends string,
+  Keys extends string = never,
+> = Route extends ParamUrl
+  ? InsertionFn<Route, Keys> & TemplateProps<Route, Part, Prefix>
+  : HasRequiredSearchKey<Keys> extends true
+    ? SearchFn<Keys> & TemplateProps<Route, Part, Prefix>
+    : { (): `${Prefix}${Route}` } & SearchFn<Keys> & { readonly $path: Part };
+
+// The properties of functions which need arguments.
+type TemplateProps<
+  Route extends string,
+  Part extends string,
+  Prefix extends string,
+> = {
+  readonly $path: Part;
+  readonly $tmpl: `${Prefix}${Route}`;
 };
 
-// Recursively setup a function for every key, prefixing the full url
-type SetupNode<T extends JetPathsParamObject, Full extends string> = PathFn<
-  Full,
-  T[BaseKey]
-> & {
-  readonly [K in keyof T as K extends BaseKey ? never : K]: T[K] extends string
-    ? PathFn<Join<Full, T[K]>, T[K]>
+// Recursively setup a function for every key, prefixing the full url. Search
+// keys declared on a route ("/search?<q!><page>") aren't part of its path.
+type SetupNode<
+  T extends JetPathsParamObject,
+  Route extends string,
+  Prefix extends string,
+> = PathFn<Route, T[PathKey], Prefix> & {
+  readonly [K in keyof T as K extends PathKey ? never : K]: T[K] extends string
+    ? PathFn<
+        Join<Route, RoutePath<T[K]>>,
+        RoutePath<T[K]>,
+        Prefix,
+        RouteSearchKeys<T[K]>
+      >
     : T[K] extends JetPathsParamObject
-      ? SetupNode<T[K], Join<Full, T[K][BaseKey]>>
+      ? SetupNode<T[K], Join<Route, T[K][PathKey]>, Prefix>
       : never;
 };
 
 // ============================= `SetupPrefix` ============================= //
 
-type SetupPrefix<
-  T extends JetPathsParamObject,
-  U extends JetPathsOptions | undefined,
-> = undefined extends U
-  ? T[BaseKey]
+// Distribute over optional options and preserve uncertain prefix values.
+type SetupPrefix<U extends JetPathsOptions | undefined> = U extends undefined
+  ? ''
   : U extends JetPathsOptions
-    ? U['prepend'] extends string
-      ? `${U['prepend']}${T[BaseKey]}`
-      : T[BaseKey]
+    ? 'prepend' extends keyof U
+      ? | Exclude<U['prepend'], undefined>
+        | (undefined extends U['prepend'] ? '' : never)
+      : ''
     : never;
 
 // ========================== `ResolvePathsObject` ========================= //
@@ -70,4 +132,4 @@ type SetupPrefix<
 export type ResolveJetPathsObject<
   T extends JetPathsParamObject,
   U extends JetPathsOptions | undefined,
-> = SetupNode<T, SetupPrefix<T, U>>;
+> = SetupNode<T, T[PathKey], SetupPrefix<U>>;

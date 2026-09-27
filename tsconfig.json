@@ -16,6 +16,7 @@
     "noEmit": true,
 
     "paths": {
+      "jet-paths": ["./src/index.ts"],
       "@src/*": ["./src/*"],
       "@cmn/*": ["./src/_common/*"],
       "@test/*": ["./test/*"]

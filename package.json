@@ -1,6 +1,6 @@
 {
   "name": "jet-paths",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "A TypeScript-first utility for composing, validating, and formatting URL paths using nested objects.",
   "type": "module",
   "main": "./lib/index.js",
@@ -32,7 +32,8 @@
     "test:run": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:lib": "node test/ai/lib.smoke.mjs",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:lib"
+    "test:types": "tsc -p tsconfig.consumer.json",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run test:browser && npm run build && npm run test:lib && npm run test:types"
   },
   "repository": {
     "type": "git",
@@ -65,23 +66,23 @@
   "homepage": "https://github.com/seanpmaxwell/jet-paths#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@stylistic/eslint-plugin": "^5.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.1",
     "@types/node": "^26.6.3",
-    "@vitest/browser": "^4.1.11",
     "@vitest/browser-playwright": "^4.1.11",
     "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.28.2",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
-    "jet-logger": "^3.0.0",
+    "jet-logger": "^3.0.3",
     "jiti": "^2.6.1",
     "playwright": "^1.63.0",
     "prettier": "^3.7.4",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.11"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

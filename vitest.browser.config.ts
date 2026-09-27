@@ -1,13 +1,18 @@
 import { playwright } from '@vitest/browser-playwright';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
+// ========================================================================= //
+//                                  EXPORT                                   //
+// ========================================================================= //
+
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  // Resolve the tsconfig "paths" aliases (i.e. "@src/*")
+  resolve: { tsconfigPaths: true },
   test: {
     include: [
       'test/index.test.ts',
       'test/ai/ai.test.ts',
+      'test/ai/regressions.test.ts',
       'test/**/browser.test.ts',
     ],
     browser: {

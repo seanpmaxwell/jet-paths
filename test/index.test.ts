@@ -7,16 +7,16 @@ import jetPaths from '../src/index';
 // ========================================================================= //
 
 const PATHS = {
-  _: '/api',
+  $path: '/api',
   Users: {
-    _: '/users',
+    $path: '/users',
     Get: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
   Posts: {
-    _: '/posts',
+    $path: '/posts',
     Get: '/all',
     Add: '/add',
     Update: '/update',
@@ -25,7 +25,7 @@ const PATHS = {
     Else: '/else/:id/something/foo',
     Other: '/other/:id/blah/:name',
     Private: {
-      _: '/private',
+      $path: '/private',
       Get: '/all',
       Delete: '/delete/:id',
     },
@@ -34,21 +34,9 @@ const PATHS = {
 } as const;
 
 const PATHS_2 = {
-  _: '/api',
+  $path: '/api',
   Users: {
-    _: '/users',
-    Get: '/all',
-    One: '/:id',
-    Add: '/add',
-    Update: '/update',
-    Delete: '/delete/:id',
-  },
-} as const;
-
-const PATHS_3 = {
-  _: '/api',
-  Users: {
-    _: '/users',
+    $path: '/users',
     Get: '/all',
     One: '/:id',
     Add: '/add',
@@ -58,9 +46,9 @@ const PATHS_3 = {
 } as const;
 
 const PATHS_4 = {
-  _: '/api',
+  $path: '/api',
   Users: {
-    _: '/users',
+    $path: '/users',
     Search: '/search',
   },
 } as const;
@@ -72,12 +60,12 @@ const PATHS_4 = {
 test('test jetPaths basics', () => {
   // Test the basics
   const jpaths = jetPaths(PATHS);
-  jpaths.Foo();
+  expect(jpaths.Foo()).toStrictEqual('/api/foo');
   expect(jpaths.Users.Add()).toStrictEqual('/api/users/add');
   expect(jpaths.Posts.Delete({ id: '5' })).toStrictEqual('/api/posts/delete/5');
   expect(jpaths.Posts.Delete({ id: -5 })).toStrictEqual('/api/posts/delete/-5');
   expect(jpaths.Posts()).toStrictEqual('/api/posts');
-  expect(jpaths.Posts._).toStrictEqual('/posts');
+  expect(jpaths.Posts.$path).toStrictEqual('/posts');
   expect(jpaths.Posts.Misc({ id: 67, foo: 'bar' })).toStrictEqual(
     '/api/posts/misc/67/something/bar',
   );
@@ -87,10 +75,13 @@ test('test jetPaths basics', () => {
   expect(() =>
     // @ts-expect-error - "foo" is not a path param
     jpaths.Posts.Else({ foo: 'bar', id: 34 }),
-  ).toThrowError();
-  expect(jpaths.Posts.Misc()).toStrictEqual(
+  ).toThrow();
+  expect(jpaths.Posts.Misc.$tmpl).toStrictEqual(
     '/api/posts/misc/:id/something/:foo',
   );
+  expect(jpaths.Posts.Misc.$path).toStrictEqual('/misc/:id/something/:foo');
+  // @ts-expect-error - arguments must start with the path params
+  expect(() => jpaths.Posts.Misc(undefined)).toThrow();
   // Test SearchParams
   interface ISearchParams {
     q: string;
@@ -111,13 +102,14 @@ test('test jetPaths prepending', () => {
   expect(jpaths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',
   );
+  expect(jpaths.Users.One.$tmpl).toStrictEqual('localhost:3000/api/users/:id');
   // @ts-expect-error - unknown key
   expect(() => jpaths.Users.Delete({ id: 5, foo: 'bar' })).toThrowError();
 });
 
 test('test more jetPaths prepending', () => {
   const PREPEND: string = 'localhost:3000';
-  const jpaths = jetPaths(PATHS_3, { prepend: PREPEND });
+  const jpaths = jetPaths(PATHS_2, { prepend: PREPEND });
   expect(jpaths.Users.Add()).toStrictEqual('localhost:3000/api/users/add');
   expect(jpaths.Users.One({ id: 5 })).toStrictEqual(
     'localhost:3000/api/users/5',

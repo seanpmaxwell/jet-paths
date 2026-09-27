@@ -21,20 +21,23 @@ async function onInit<T>(cb: () => Promise<T>, cbName?: string): Promise<T> {
 /**
  * Same as above but synchronous.
  */
-onInit.sync = function <T>(cb: () => T, cbName?: string): T {
+function sync<T>(cb: () => T, cbName?: string): T {
   try {
     return cb();
   } catch (err) {
     logger.err(`onInit.sync function "${cbName}" failed:`, err);
     throw err;
   }
-};
+}
 
 // Useful for temporarily disabling the callback (e.g. in playgrounds)
-onInit.skip = function skip(_: () => unknown, __?: string): void {};
+function skip(_: () => unknown, __?: string): void {}
 
 // ========================================================================= //
 //                                  EXPORT                                   //
 // ========================================================================= //
+
+onInit.sync = sync;
+onInit.skip = skip;
 
 export default onInit;
