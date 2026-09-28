@@ -46,18 +46,16 @@ Paths.Users.One.$tmpl;         // '/api/users/:id'
 Paths.$path;                   // '/api'
 ```
 
-> `$path` is the local path template. Routes that need arguments (path parameters or a required search key) also have `$tmpl`: the complete path template, including parent paths and any prefix.
-
-> Call a route to build a URL; routes that don't need arguments return it when called with no arguments.
+> Adding a path parameter (e.g. `/:id`) creates a type safe object which must be passed as the first argument to the URL function.
 
 <p align="center">* * *</p>
 
 ## 🤔 Why jet-paths?
 
 - Type-safe, single source of truth for all your routes
-- Nested objects are functions too — no repeated prefixes, full URLs out of the box
+- Full URLs out of the box with built-in type-safe formatting functions
 - Path and search params are type-checked, validated at runtime, and URL-encoded
-- `.$path` and `.$tmpl` give you the local and full path templates
+- `.$path` and `.$tmpl` give you the local and full unformatted path templates
 - Small, lightweight, and zero dependency: **2.1 kB** gzipped + minified 
 
 <p align="center">* * *</p>
@@ -92,14 +90,14 @@ const Paths = jetPaths(
     },
     Posts: {
       $path: '/posts',
-      Get: '/all?<q!><page>',
+      Get: '/all?<q!><page>', // <- search parameters
       Add: '/add',
       Update: '/update',
-      Delete: '/delete/:id',
+      Delete: '/delete/:id', // <- path parameters
       Private: {
         $path: '/private',
         Get: '/all',
-        Delete: '/delete/:foo/bar/:id',
+        Delete: '/delete/:foo/bar/:id', // <- multiple path parameters
       },
     },
   },
@@ -116,8 +114,9 @@ Paths.Users.Get({ page: 2 });                     // "localhost:3000/api/users/a
 Paths.Users.Delete({ id: 1 });                    // "localhost:3000/api/users/delete/1"
 Paths.Users.Delete.$tmpl;                         // "localhost:3000/api/users/delete/:id"
 Paths.Posts.Get({ q: 'x', page: 2 });             // "localhost:3000/api/posts/all?q=x&page=2"
-Paths.Posts.Get({ q: 'x', pg: 3 });               // ❌ type error
+Paths.Posts.Get({ q: 'x', pg: 3 });               // ❌ type error, pg is not declared
 Paths.Posts.Private.Delete({ foo: 'a', id: 2 });  // "localhost:3000/api/posts/private/delete/a/bar/2"
+Paths.Posts.Private.Delete({ foo: 'a' });         // ❌ type error, id is missing
 ```
 
 If you store the definition in a variable before passing it to `jetPaths`, use `as const` to preserve the literal templates. TypeScript rejects widened `string` templates because their parameter names cannot be inferred safely:
@@ -172,7 +171,7 @@ Paths.Users.Delete({ userId: 1 });
 
 ---
 
-#### Append search parameters and encode values
+#### Appending search parameters without declaring them
 
 For routes without path parameters, pass search parameters as the first argument, or no arguments when you don't need a query string. Arrays become repeated keys, `undefined` values are omitted, and `false` and `0` are preserved:
 
@@ -205,7 +204,7 @@ Paths.Users.Get({ since: new Date('2026-01-01T00:00:00Z').toISOString() });
 
 ---
 
-#### Declare search parameters
+#### Declaring search parameters
 
 To type-check a route's search parameters, list their keys after a `?` in the route, each in angle brackets. Keys are optional unless they end with `!` (i.e. `<q!>`). Only declared keys are accepted, and required keys must have a value:
 
