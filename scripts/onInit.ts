@@ -30,14 +30,10 @@ function sync<T>(cb: () => T, cbName?: string): T {
   }
 }
 
-// Useful for temporarily disabling the callback (e.g. in playgrounds)
-function skip(_: () => unknown, __?: string): void {}
-
 // ========================================================================= //
 //                                  EXPORT                                   //
 // ========================================================================= //
 
 onInit.sync = sync;
-onInit.skip = skip;
 
 export default onInit;

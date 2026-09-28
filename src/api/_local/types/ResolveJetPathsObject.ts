@@ -15,11 +15,10 @@ import type {
 // ========================================================================= //
 
 type PathKey = typeof PATH_KEY;
-
-// ============================== `SetupNode` ============================== //
-
 // A url with at least one path param.
 type ParamUrl = `${string}/:${string}`;
+
+// ============================== `SetupNode` ============================== //
 
 // Rejects keys which aren't in "Expected", even through variables and spreads.
 // Without extra keys it's just "Actual", so errors show the expected type.
@@ -44,19 +43,14 @@ type InsertionFn<
         searchParams?: SearchParams<T>,
       ): string;
     }
-  : HasRequiredSearchKey<Keys> extends true
-    ? {
-        <Actual extends P, Search extends D>(
-          pathParams: Exact<Actual, P>,
-          searchParams: Exact<Search, D>,
-        ): string;
-      }
-    : {
-        <Actual extends P, Search extends D>(
-          pathParams: Exact<Actual, P>,
-          searchParams?: Exact<Search, D>,
-        ): string;
-      };
+  : {
+      <Actual extends P, Search extends D>(
+        pathParams: Exact<Actual, P>,
+        ...searchParams: HasRequiredSearchKey<Keys> extends true
+          ? [searchParams: Exact<Search, D>]
+          : [searchParams?: Exact<Search, D>]
+      ): string;
+    };
 
 // A url without path params. When arguments are passed, the search params are
 // required. Routes which declare search keys only accept those keys.
