@@ -54,13 +54,11 @@ Paths.$path;                   // '/api'
 
 ## 🤔 Why jet-paths?
 
-Here's a simplified version:
-
 - Type-safe, single source of truth for all your routes
 - Nested objects are functions too — no repeated prefixes, full URLs out of the box
 - Path and search params are type-checked, validated at runtime, and URL-encoded
 - `.$path` and `.$tmpl` give you the local and full path templates
-- Small, fast, and zero dependency: **2.1 kB** gzipped + minified 
+- Small, lightweight, and zero dependency: **2.1 kB** gzipped + minified 
 
 <p align="center">* * *</p>
 
