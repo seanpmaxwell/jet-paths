@@ -71,9 +71,9 @@ Paths.$path;                   // '/api'
 - [Inherit path parameters from parents](#inherit-path-parameters-from-parents)
 - [Group routes without adding a path segment](#group-routes-without-adding-a-path-segment)
 - [Destructure routes and paths](#destructure-routes-and-paths)
-- [Using with React](#using-with-react)
-- [Options](#options)
+- [Options: `prepend:` and `disableRegex:`](#options-prepend-and-disableregex)
 - [Validation and error cases](#validation-and-error-cases)
+- [Using with React](#using-with-react)
 
 #### Another, more complete snippet
 
