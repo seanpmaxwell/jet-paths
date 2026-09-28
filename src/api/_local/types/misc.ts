@@ -9,12 +9,12 @@ export interface JetPathsOptions {
   disableRegex?: boolean;
 }
 
-// ========================== The Main Api Object ========================== //
-
 export type JetPathsParamObject = {
   $path: string;
   [key: string]: string | JetPathsParamObject;
 };
+
+// ======================== `ValidateJetPathsObject` ======================= //
 
 // Literal templates are needed to distinguish path params from search params.
 // Preserve inference through the intersection at the public entry point.

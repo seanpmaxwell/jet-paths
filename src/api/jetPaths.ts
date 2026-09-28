@@ -104,7 +104,7 @@ function setupNode(
   }
   // Init vars
   const localBaseUrl = parentUrl + baseUrl,
-    retVal = setupPathFn(baseUrl, localBaseUrl, settings, keyPath, true);
+    retVal = setupPathFn(baseUrl, parentUrl, settings, keyPath, true);
   // Iterate keys
   for (const [key, value] of Object.entries(node)) {
     if (key === PATH_KEY) {
@@ -118,7 +118,7 @@ function setupNode(
     }
     const child =
       typeof value === 'string'
-        ? setupRoute(value, localBaseUrl, settings, childKeyPath)
+        ? setupPathFn(value, localBaseUrl, settings, childKeyPath, false)
         : setupNode(value, settings, localBaseUrl, ancestors, childKeyPath);
     addProperty(retVal, key, child);
   }
@@ -129,41 +129,10 @@ function setupNode(
 }
 
 /**
- * Split a route into its path and the search keys declared after a "?" (i.e.
- * "/search?<q!><page>"), then setup its function. The declared keys aren't part
- * of the path.
- *
- * Used by: {@link setupNode}
- *
- * @private
- */
-function setupRoute(
-  route: string,
-  parentUrl: string,
-  settings: ISettings,
-  keyPath: string,
-): PathFunction {
-  const index = route.indexOf('?');
-  if (index === -1) {
-    return setupPathFn(route, parentUrl + route, settings, keyPath, false);
-  }
-  const path = route.slice(0, index),
-    searchKeys = parseSearchKeys(route, index + 1, settings, keyPath);
-  return setupPathFn(
-    path,
-    parentUrl + path,
-    settings,
-    keyPath,
-    false,
-    searchKeys,
-  );
-}
-
-/**
  * Parse the search keys declared after the "?" (i.e. "<q!><page>"). Keys are
  * optional unless they end with "!".
  *
- * Used by: {@link setupRoute}
+ * Used by: {@link setupPathFn}
  *
  * @private
  */
@@ -205,18 +174,26 @@ function parseSearchKeys(
  * search params. Routes which declare search keys only accept those keys.
  * Every function has a "$path" property which is the local path template.
  *
- * Used by: {@link setupNode}, {@link setupRoute}
+ * Used by: {@link setupNode}
  *
  * @private
  */
 function setupPathFn(
-  partialUrl: string,
-  fullUrl: string,
+  route: string,
+  parentUrl: string,
   settings: ISettings,
   keyPath: string | undefined,
   isBaseKey: boolean,
-  searchKeys?: ISearchKeys,
 ): PathFunction {
+  // Only leaf routes declare search keys; a group's base path is validated
+  // as-is. Split and compile once, before creating the callable route.
+  const index = isBaseKey ? -1 : route.indexOf('?'),
+    partialUrl = index === -1 ? route : route.slice(0, index),
+    fullUrl = parentUrl + partialUrl,
+    searchKeys =
+      index === -1
+        ? undefined
+        : parseSearchKeys(route, index + 1, settings, keyPath ?? ROOT_KEY_PATH);
   if (settings.validate) {
     validateTemplate(partialUrl, fullUrl, keyPath, isBaseKey);
   }
@@ -287,9 +264,10 @@ function validateTemplate(
       : `${keyPath}.${PATH_KEY}`
     : (keyPath ?? ROOT_KEY_PATH);
   // Only "$path" may be empty, everything else must start with a "/"
-  if (!isBaseKey && !partialUrl.startsWith('/')) {
-    throw Errors.Template(errorKeyPath, partialUrl);
-  } else if (!TEMPLATE_REGEX.test(partialUrl)) {
+  if (
+    (!isBaseKey && !partialUrl.startsWith('/')) ||
+    !TEMPLATE_REGEX.test(partialUrl)
+  ) {
     throw Errors.Template(errorKeyPath, partialUrl);
   } else if (!TEMPLATE_REGEX.test(fullUrl)) {
     throw Errors.Template(errorKeyPath, fullUrl);
