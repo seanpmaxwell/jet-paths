@@ -322,7 +322,7 @@ Object rest and spread (`{ ...Paths.Users }`) only copy a function's properties,
 
 ---
 
-#### Options: `prepend:` and `disableRegex:`
+#### Options: `prepend` and `disableRegex`
 
 - **`prepend`** (`string` | `undefined`, default `undefined`) — Prepends a string verbatim to every generated URL and complete path template. This prefix is not validated or interpolated: put `/:name` parameters in the route definitions, not in `prepend`. Dynamic or optional prefixes widen the types of `.$tmpl` and no-argument calls without losing route-parameter inference.
 - **`disableRegex`** (`boolean` | `undefined`, default `false`) — Skips validating the route templates when `jetPaths()` is called. Path and search values are still encoded.
@@ -402,10 +402,12 @@ Paths.Users.Get(); // ✅ "localhost:3000/api/users/all"
 
 #### Using with React
 
-Create your paths once, at module level, and call routes directly while rendering. Building a URL takes a fraction of a microsecond, and a rebuilt URL is an equal string, so it doesn't re-run effects or change query keys unless its values change:
+Create your paths once, at module level, and call routes directly while rendering. Building a URL takes a fraction of a microsecond, but I still recommend memoizing it, so it isn't rebuilt every time.
+
+Don't call `jetPaths()` inside a component: it would rebuild every route on each render and create new route functions.
 
 ```tsx
-// paths.ts: create the routes once, at module level
+// @src/common/constants/paths.ts: create the routes once, at module level
 export const Paths = jetPaths({
   $path: '/api',
   Users: { $path: '/users', One: '/:id' },
@@ -413,21 +415,14 @@ export const Paths = jetPaths({
 
 // UserComponent.tsx
 function UserComponent({ id }: { id: number }) {
-  // Rebuilt on every render, but the effect only re-runs when "id" changes
-  const url = Paths.Users.One({ id });
+
   useEffect(() => {
-    void fetch(url);
-  }, [url]);
+    const url = Paths.Users.One({ id });
+    fetch(url);
+  }, [id]);
+
   return <a href={url}>User {id}</a>;
 }
-```
-
-Don't call `jetPaths()` inside a component: it would rebuild every route on each render and create new route functions, which breaks memoized props and effect dependencies.
-
-If profiling shows URL building matters, i.e. in a very large list, memoize it with `useMemo` and primitive dependencies:
-
-```tsx
-const url = useMemo(() => Paths.Users.One({ id }), [id]);
 ```
 
 <p align="center">* * *</p>
