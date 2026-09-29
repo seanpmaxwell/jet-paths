@@ -71,7 +71,6 @@ Paths.$path;                   // '/api'
 - [Destructure routes and paths](#destructure-routes-and-paths)
 - [Options: `prepend:` and `disableRegex:`](#options-prepend-and-disableregex)
 - [Validation and error cases](#validation-and-error-cases)
-- [Using with React](#using-with-react)
 
 #### Another, more complete snippet
 
@@ -395,33 +394,6 @@ Passing `undefined` still counts as an argument, so a call with a missing value 
 ```ts
 Paths.Users.Get(undefined); // ❌ throws, doesn't return the URL
 Paths.Users.Get(); // ✅ "localhost:3000/api/users/all"
-```
-
----
-
-#### Using with React
-
-Create your paths once, at module level, and call routes directly while rendering. Building a URL takes a fraction of a microsecond, but I still recommend memoizing it, so it isn't rebuilt every time.
-
-Don't call `jetPaths()` inside a component: it would rebuild every route on each render and create new route functions.
-
-```tsx
-// @src/common/constants/paths.ts: create the routes once, at module level
-export const Paths = jetPaths({
-  $path: '/api',
-  Users: { $path: '/users', One: '/:id' },
-});
-
-// UserComponent.tsx
-function UserComponent({ id }: { id: number }) {
-
-  useEffect(() => {
-    const url = Paths.Users.One({ id });
-    fetch(url);
-  }, [id]);
-
-  return <a href={url}>User {id}</a>;
-}
 ```
 
 <p align="center">* * *</p>
